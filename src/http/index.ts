@@ -2,3 +2,4 @@
 // TODO: W-007, W-008, W-009, W-010
 
 export { TokenBucket } from "./limiter"
+export { combineSignals, fetchWithTimeoutAndAbort } from "./timeout"
