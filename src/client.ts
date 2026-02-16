@@ -1,5 +1,6 @@
 import { ConfigurationError } from "@/errors"
 import { DiscoveryService } from "@/discovery"
+import { DownloadService } from "@/download"
 import { ExhibitService } from "@/exhibits"
 import { SecHttpClient } from "@/http"
 import type {
@@ -26,6 +27,7 @@ export class EdgarClient {
   private readonly httpClient: SecHttpClient
   private readonly discoveryService: DiscoveryService
   private readonly exhibitService: ExhibitService
+  private readonly downloadService: DownloadService
 
   constructor(options: EdgarClientOptions) {
     if (!options.userAgent || options.userAgent.trim().length === 0) {
@@ -44,6 +46,7 @@ export class EdgarClient {
     this.httpClient = new SecHttpClient(this.options)
     this.discoveryService = new DiscoveryService(this.httpClient)
     this.exhibitService = new ExhibitService(this.httpClient)
+    this.downloadService = new DownloadService(this.httpClient)
   }
 
   async discoverFilings(input: DiscoverFilingsInput): Promise<FilingRef[]> {
@@ -58,8 +61,7 @@ export class EdgarClient {
     return this.exhibitService.listContractExhibits(filing)
   }
 
-  async downloadExhibit(_exhibit: ExhibitRef): Promise<DownloadedExhibit> {
-    // TODO: W-022
-    throw new Error("Not yet implemented")
+  async downloadExhibit(exhibit: ExhibitRef): Promise<DownloadedExhibit> {
+    return this.downloadService.downloadExhibit(exhibit)
   }
 }
