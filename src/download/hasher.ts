@@ -1,10 +1,13 @@
 // SHA-256 digest computation using W3C Web Crypto API
 // Reference: NIST FIPS 180-4 (SHA-256 specification)
 
-// Declare crypto global (available in Node 18+ and Bun)
-declare const crypto: {
-  subtle: {
-    digest(algorithm: string, data: Uint8Array | ArrayBuffer): Promise<ArrayBuffer>
+// Use globalThis.crypto for cross-runtime compatibility (Node 18+, Bun).
+// The declare ensures TypeScript sees the type without @types/node or DOM lib.
+declare const globalThis: {
+  crypto: {
+    subtle: {
+      digest(algorithm: string, data: Uint8Array | ArrayBuffer): Promise<ArrayBuffer>
+    }
   }
 }
 
@@ -28,7 +31,7 @@ declare const crypto: {
  */
 export async function computeSha256Hex(data: Uint8Array): Promise<string> {
   // Compute SHA-256 digest using Web Crypto API
-  const hashBuffer = await crypto.subtle.digest("SHA-256", data)
+  const hashBuffer = await globalThis.crypto.subtle.digest("SHA-256", data)
 
   // Convert ArrayBuffer to lowercase hex string
   const hashArray = Array.from(new Uint8Array(hashBuffer))
