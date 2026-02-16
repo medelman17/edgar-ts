@@ -1,15 +1,14 @@
 // SHA-256 digest computation using W3C Web Crypto API
 // Reference: NIST FIPS 180-4 (SHA-256 specification)
 
-// Use globalThis.crypto for cross-runtime compatibility (Node 18+, Bun).
-// The declare ensures TypeScript sees the type without @types/node or DOM lib.
-declare const globalThis: {
-  crypto: {
-    subtle: {
-      digest(algorithm: string, data: Uint8Array | ArrayBuffer): Promise<ArrayBuffer>
-    }
-  }
+// Type for the Web Crypto subtle interface (avoids @types/node dependency).
+type SubtleCrypto = {
+  digest(algorithm: string, data: Uint8Array | ArrayBuffer): Promise<ArrayBuffer>
 }
+
+// Access crypto.subtle via globalThis for cross-runtime compatibility (Node 18+, Bun).
+// eslint-disable-next-line -- accessing global crypto without @types/node
+const subtle = (globalThis as unknown as { crypto: { subtle: SubtleCrypto } }).crypto.subtle
 
 /**
  * Compute SHA-256 hex digest of binary data.
@@ -31,7 +30,7 @@ declare const globalThis: {
  */
 export async function computeSha256Hex(data: Uint8Array): Promise<string> {
   // Compute SHA-256 digest using Web Crypto API
-  const hashBuffer = await globalThis.crypto.subtle.digest("SHA-256", data)
+  const hashBuffer = await subtle.digest("SHA-256", data)
 
   // Convert ArrayBuffer to lowercase hex string
   const hashArray = Array.from(new Uint8Array(hashBuffer))
