@@ -2,34 +2,28 @@ import { describe, expect, it } from "vitest"
 import { getRuntime } from "@/http/runtime"
 
 describe("getRuntime", () => {
-  it("returns 'bun' when process.versions.bun is defined", () => {
-    const originalBun = process.versions.bun
-    // @ts-expect-error - testing runtime detection
-    process.versions.bun = "1.0.0"
-
-    expect(getRuntime()).toBe("bun")
-
-    // Restore
-    if (originalBun) {
-      // @ts-expect-error - restore
-      process.versions.bun = originalBun
-    } else {
-      // @ts-expect-error - cleanup
-      delete process.versions.bun
-    }
+  it("returns consistent runtime value", () => {
+    // Runtime is cached at module load time
+    const runtime = getRuntime()
+    expect(runtime).toMatch(/^(node|bun)$/)
   })
 
-  it("returns 'node' when process.versions.bun is undefined", () => {
-    const originalBun = process.versions.bun
-    // @ts-expect-error - testing runtime detection
-    delete process.versions.bun
+  it("returns same value on repeated calls (cached)", () => {
+    // Verify caching behavior
+    const first = getRuntime()
+    const second = getRuntime()
+    expect(first).toBe(second)
+  })
 
-    expect(getRuntime()).toBe("node")
+  it("detects correct runtime for current environment", () => {
+    // Verify actual runtime detection
+    const runtime = getRuntime()
+    const isBun = typeof process.versions.bun !== "undefined"
 
-    // Restore
-    if (originalBun) {
-      // @ts-expect-error - restore
-      process.versions.bun = originalBun
+    if (isBun) {
+      expect(runtime).toBe("bun")
+    } else {
+      expect(runtime).toBe("node")
     }
   })
 })
