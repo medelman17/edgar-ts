@@ -1,0 +1,11 @@
+{
+  "$schema": "https://unpkg.com/@changesets/config@3.1.1/schema.json",
+  "changelog": [
+    "@changesets/changelog-github",
+    { "repo": "medelman17/edgar-ts" }
+  ],
+  "commit": false,
+  "baseBranch": "main",
+  "access": "public",
+  "updateInternalDependencies": "patch"
+}
