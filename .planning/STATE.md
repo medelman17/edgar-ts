@@ -2,7 +2,7 @@
 
 **Project:** edgar-ts — TypeScript library for SEC EDGAR filing discovery and contract exhibit acquisition
 
-**Last Updated:** 2026-02-16 (Phase 1 Plan 01 complete)
+**Last Updated:** 2026-02-16 (Phase 1 Plan 02 complete)
 
 ---
 
@@ -24,17 +24,19 @@
 
 **Current Phase:** 1 (In Progress) — HTTP Transport & Rate Limiting
 
-**Current Plan:** 2/3 (Plan 01 complete, Plan 02 next)
+**Current Plan:** 3/3 (Plans 01-02 complete, Plan 03 next)
 
 **Phase Progress:**
 - Plan 01 (Rate limiting & timeout foundations) ✓ Complete
-- Plan 02 (Retry policy & error mapper) → Next
-- Plan 03 (SecHttpClient integration) → Pending
+- Plan 02 (Retry policy & error mapper) ✓ Complete
+- Plan 03 (SecHttpClient integration) → Next
 
 **Completed:**
 - TokenBucket rate limiter with 1-10 req/s bounds
 - Timeout/abort signal composition with Node 18/20 polyfill
-- 27 passing tests with fake timer validation
+- Exponential backoff with full jitter (AWS best practice)
+- HTTP status → typed error classification with retryability flags
+- 67 passing tests with variance validation
 
 ---
 
@@ -53,6 +55,7 @@
 | Phase | Plan | Duration | Tasks | Files | Status |
 |-------|------|----------|-------|-------|--------|
 | 01-http-transport-rate-limiting | 01 | 514s | 2 | 4 | ✓ Complete |
+| 01-http-transport-rate-limiting | 02 | 185s | 2 | 4 | ✓ Complete |
 
 ---
 
@@ -68,6 +71,8 @@
 | Phase 5 integration-focused | All core features complete in Phases 1-4; Phase 5 consolidates tests, docs, release | ✓ Clean separation |
 | Promise chain for TokenBucket fairness | Sequential processing without race conditions; works with fake timers | ✓ Applied (Phase 1 Plan 01) |
 | Inline combineSignals polyfill | Node 18/20 compatibility without dependencies | ✓ Applied (Phase 1 Plan 01) |
+| Full jitter formula for retry backoff | AWS best practice prevents thundering herd; uniform distribution verified | ✓ Applied (Phase 1 Plan 02) |
+| HTTP status classification (5xx/429/408 retryable) | Aligns with HTTP spec semantics; maximizes retry efficiency | ✓ Applied (Phase 1 Plan 02) |
 
 ### Architecture Highlights
 
@@ -120,6 +125,6 @@ When planning Phase 1, refer to:
 ---
 
 **Last Session:**
-- Stopped at: Completed Phase 1 Plan 01 (Rate limiting & timeout foundations)
-- Timestamp: 2026-02-16T02:46:11Z
-- Next action: `/gsd:execute-plan` for Phase 1 Plan 02 (Retry policy & error mapper)
+- Stopped at: Completed Phase 1 Plan 02 (Retry policy & error mapper)
+- Timestamp: 2026-02-16T02:50:30Z
+- Next action: `/gsd:execute-plan` for Phase 1 Plan 03 (SecHttpClient integration)
