@@ -2,7 +2,7 @@
 
 **Project:** edgar-ts — TypeScript library for SEC EDGAR filing discovery and contract exhibit acquisition
 
-**Last Updated:** 2026-02-16 (Phase 4 Plan 02 complete)
+**Last Updated:** 2026-02-16 (Phase 5 Plan 01 complete)
 
 ---
 
@@ -22,9 +22,9 @@
 
 ## Current Position
 
-**Current Phase:** 04
+**Current Phase:** 05
 
-**Current Plan:** Not started
+**Current Plan:** 02 (of 03)
 
 **Phase 1 Progress (Complete):**
 - Plan 01 (Rate limiting & timeout foundations) ✓ Complete
@@ -44,6 +44,11 @@
 **Phase 4 Progress (Complete):**
 - Plan 01 (Download service & SHA-256 integrity) ✓ Complete
 - Plan 02 (EdgarClient download integration) ✓ Complete
+
+**Phase 5 Progress (In Progress):**
+- Plan 01 (Type export validation & compliance) ✓ Complete
+- Plan 02 (End-to-end integration tests) Not started
+- Plan 03 (Release preparation) Not started
 
 **Phase 1 Completed:**
 - TokenBucket rate limiter with 1-10 req/s bounds
@@ -85,6 +90,13 @@
 - EdgarClient.downloadExhibit() fully functional with DownloadService delegation
 - 25 new tests (7 NIST vectors + 11 service integration + 7 client integration)
 
+**Phase 5 In Progress:**
+- Type export completeness validation: 20 compile-time tests covering all public API types
+- isolatedDeclarations compiler compliance: 8 tests enforcing TypeScript compiler flags and .d.ts generation
+- All 28 type validation tests passing with 100% coverage of exported types
+- TYPE-01 satisfied: All public inputs/outputs have exported TypeScript types
+- TYPE-02 satisfied: All exports use isolatedDeclarations-compatible explicit annotations
+
 ---
 
 ## Performance Metrics
@@ -112,6 +124,7 @@
 | 03-exhibit-enumeration-contract-filtering | 03 | 259s | 2 | 5 | ✓ Complete |
 | 04-exhibit-download-integrity-verification | 01 | 157s | 2 | 5 | ✓ Complete |
 | 04-exhibit-download-integrity-verification | 02 | 140s | 2 | 2 | ✓ Complete |
+| 05-integration-testing-release | 01 | 138s | 2 | 2 | ✓ Complete |
 
 ## Accumulated Context
 
@@ -153,6 +166,9 @@
 | Optional MIME type extraction from Content-Type header | Content-Type may be absent; strip charset parameter for canonical MIME type | ✓ Applied (Phase 4 Plan 01) |
 | Mirror ExhibitService/DiscoveryService wiring pattern for DownloadService | Consistent service delegation across all EdgarClient methods; proven pattern from prior phases | ✓ Applied (Phase 4 Plan 02) |
 | Use NIST "abc" test vector in integration tests | Verify end-to-end SHA-256 computation correctness at client API level; confirms hasher integration | ✓ Applied (Phase 4 Plan 02) |
+| Use compile-time assertions over runtime type checks | TypeScript will error at build time if types are missing or incorrect, providing stronger guarantees | ✓ Applied (Phase 5 Plan 01) |
+| Separate exports.test.ts and isolated-declarations.test.ts | Different concerns (API surface vs compiler compliance), easier to maintain and debug separately | ✓ Applied (Phase 5 Plan 01) |
+| execSync wrapper checks for typecheck/build success | TypeScript exits with code 0 on success with no output; checking exit code via expect().not.toThrow() is clearest | ✓ Applied (Phase 5 Plan 01) |
 
 ### Architecture Highlights
 
@@ -205,6 +221,6 @@ When planning Phase 1, refer to:
 ---
 
 **Last Session:**
-- Stopped at: Completed Phase 4 Plan 02 (EdgarClient download integration) - 2 tasks, 7 tests, 140s
-- Timestamp: 2026-02-16T04:43:33Z
-- Next action: Phase 4 complete (all plans done) - proceed to Phase 5 integration
+- Stopped at: Completed Phase 5 Plan 01 (Type export validation & compliance) - 2 tasks, 28 tests, 138s
+- Timestamp: 2026-02-16T05:05:28Z
+- Next action: Proceed to Phase 5 Plan 02 (End-to-end integration tests)
