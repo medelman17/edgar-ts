@@ -1,0 +1,56 @@
+# edgar-ts
+
+## 0.1.0
+
+### Minor Changes
+
+- 259ab4d: Initial release of edgar-ts: TypeScript SEC EDGAR client for filing discovery and contract exhibit acquisition.
+
+  ## Features
+
+  - **Filing Discovery**: Date-bounded search with optional CIK and form-type filtering
+
+    - Supports 8-K, 10-K, 10-Q, 20-F, S-1 family (default form set)
+    - Deterministic normalization (CIK zero-padding, canonical accession format)
+    - Stable sorting and deduplication
+
+  - **Exhibit Enumeration**: Normalized exhibit metadata from SEC filing indices
+
+    - Full exhibit listing per filing
+    - Contract-specific filtering (EX-10\* only)
+    - Provenance URLs preserved
+
+  - **Raw Download**: Exhibit byte retrieval with integrity verification
+
+    - SHA-256 hashing
+    - MIME type hints
+    - File size metadata
+
+  - **SEC Compliance**: Built-in rate limiting and retry logic
+
+    - 8 req/s default rate limit (configurable)
+    - Exponential backoff with full jitter
+    - Mandatory user-agent validation
+
+  - **Runtime Support**: Node.js 18+ and Bun
+    - Zero runtime dependencies
+    - Dual ESM/CJS exports
+    - TypeScript types with isolatedDeclarations
+
+  ## Requirements Satisfied
+
+  All 34 v1 requirements implemented across 5 phases:
+
+  - HTTP-01–07, OBSV-01–02 (Phase 1: HTTP transport)
+  - DISC-01–08 (Phase 2: Filing discovery)
+  - EXHB-01–05, CNTR-01–02 (Phase 3: Exhibit enumeration)
+  - DNLD-01–04 (Phase 4: Download)
+  - TYPE-01–02, RLSE-01–04 (Phase 5: Integration/release)
+
+  ## Bundle Size
+
+  3.56 kB gzipped (18% of 20 KB limit)
+
+  ## Breaking Changes
+
+  None (initial release)
