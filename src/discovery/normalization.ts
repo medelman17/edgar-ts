@@ -108,7 +108,7 @@ export function validateDate(input: string): void {
   }
 
   // Parse and validate value - check if parsing changes the date (detects invalid dates)
-  const date = new Date(input + "T00:00:00Z")
+  const date = new Date(`${input}T00:00:00Z`)
   if (Number.isNaN(date.getTime())) {
     throw new ValidationError(`Invalid date value`, {
       metadata: { input },
