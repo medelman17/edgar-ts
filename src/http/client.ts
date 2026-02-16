@@ -12,11 +12,6 @@ import { getRuntime } from "./runtime"
 // Web-standard APIs available globally in Node 18+ and Bun
 declare const setTimeout: (callback: () => void, ms: number) => unknown
 declare const fetch: (url: string, init?: { signal?: AbortSignal; headers?: Headers }) => Promise<HttpResponse>
-declare const globalThis: {
-  crypto: {
-    randomUUID: () => string
-  }
-}
 declare class Headers {
   constructor(init?: Record<string, string>)
   has(name: string): boolean
@@ -151,7 +146,7 @@ export class SecHttpClient {
     let attempt = 0
     while (attempt < this.retries.maxAttempts) {
       // Generate unique requestId for each HTTP attempt
-      const requestId = globalThis.crypto.randomUUID()
+      const requestId = (globalThis as unknown as { crypto: { randomUUID: () => string } }).crypto.randomUUID()
 
       try {
 

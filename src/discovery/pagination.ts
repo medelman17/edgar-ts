@@ -34,13 +34,14 @@ import { recordsFromParallelArrays } from "./types"
 export async function fetchAllFilings(
   cik: string,
   httpClient: SecHttpClient,
+  context?: { readonly operation: string; readonly endpointClass: string },
 ): Promise<FilingRecord[]> {
   // 1. Normalize CIK to 10-digit format (throws ValidationError on invalid input)
   const normalizedCik = normalizeCik(cik)
 
   // 2. Fetch primary submissions endpoint
   const primaryUrl = `https://data.sec.gov/submissions/CIK${normalizedCik}.json`
-  const primaryResponse = (await httpClient.request(primaryUrl)) as unknown as {
+  const primaryResponse = (await httpClient.request(primaryUrl, { context })) as unknown as {
     json(): Promise<unknown>
   }
 
@@ -66,7 +67,7 @@ export async function fetchAllFilings(
   for (const file of paginatedFiles) {
     const fileUrl = `https://data.sec.gov/submissions/${file.name}`
 
-    const paginatedResponse = (await httpClient.request(fileUrl)) as unknown as {
+    const paginatedResponse = (await httpClient.request(fileUrl, { context })) as unknown as {
       json(): Promise<unknown>
     }
 
