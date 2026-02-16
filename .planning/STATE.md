@@ -2,7 +2,7 @@
 
 **Project:** edgar-ts — TypeScript library for SEC EDGAR filing discovery and contract exhibit acquisition
 
-**Last Updated:** 2026-02-16 (Phase 2 Plan 02 complete)
+**Last Updated:** 2026-02-16 (Phase 2 Plan 03 complete)
 
 ---
 
@@ -34,6 +34,7 @@
 **Phase 2 Progress:**
 - Plan 01 (Normalization & deduplication foundations) ✓ Complete
 - Plan 02 (SEC Submissions API pagination) ✓ Complete
+- Plan 03 (DiscoveryService integration & client wiring) ✓ Complete
 
 **Phase 1 Completed:**
 - TokenBucket rate limiter with 1-10 req/s bounds
@@ -51,7 +52,9 @@
 - dedupeAndSort: identity-based dedup with stable sort
 - fetchAllFilings: recursive pagination through SEC filings.files array
 - SubmissionsResponse and FilingRecord types for SEC API structure
-- 63 new tests (35 normalization + 11 deduplication + 17 pagination)
+- DiscoveryService: complete orchestration flow (validate → fetch → filter → normalize → dedupe → sort)
+- EdgarClient.discoverFilings() fully functional with delegation to DiscoveryService
+- 82 new tests (35 normalization + 11 deduplication + 17 pagination + 15 service + 4 client integration)
 
 ---
 
@@ -74,6 +77,7 @@
 | 01-http-transport-rate-limiting | 03 | 444s | 2 | 3 | ✓ Complete |
 | 02-filing-discovery-normalization | 01 | 237s | 2 | 5 | ✓ Complete |
 | 02-filing-discovery-normalization | 02 | 413s | 1 | 5 | ✓ Complete |
+| 02-filing-discovery-normalization | 03 | 307s | 2 | 5 | ✓ Complete |
 
 ---
 
@@ -99,6 +103,9 @@
 | Paginated files use www.sec.gov base URL | Research findings indicate paginated files differ from primary endpoint base | ✓ Applied (Phase 2 Plan 02) |
 | Parse both direct and parallel array formats | SEC paginated responses may vary in structure; support both for flexibility | ✓ Applied (Phase 2 Plan 02) |
 | Unknown intermediate casting for type narrowing | SecHttpClient response lacks json() method; cast to unknown then narrow to avoid any | ✓ Applied (Phase 2 Plan 02) |
+| ConfigurationError for CIK-less discovery | NotImplementedError doesn't exist in taxonomy; ConfigurationError semantically correct for "feature not yet supported" | ✓ Applied (Phase 2 Plan 03) |
+| Default form types include amendments | Amendments are separate submissions with distinct exhibits; users want comprehensive discovery | ✓ Applied (Phase 2 Plan 03) |
+| SEC viewer URL format for filing provenance | Research recommends viewer format with compact accession; provides direct filing access | ✓ Applied (Phase 2 Plan 03) |
 
 ### Architecture Highlights
 
@@ -151,6 +158,6 @@ When planning Phase 1, refer to:
 ---
 
 **Last Session:**
-- Stopped at: Completed Phase 2 Plan 02 (SEC Submissions API Pagination) - 1 task, 17 tests, 413s
-- Timestamp: 2026-02-16T03:29:24Z
-- Next action: Continue Phase 2 with Plan 03 or verify phase completion
+- Stopped at: Completed Phase 2 Plan 03 (DiscoveryService Integration & Client Wiring) - 2 tasks, 19 tests, 307s
+- Timestamp: 2026-02-16T03:38:08Z
+- Next action: Phase 2 complete. Ready for Phase 3 (Exhibit Parsing) or verify phase completion
