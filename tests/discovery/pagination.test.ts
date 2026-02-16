@@ -281,9 +281,9 @@ describe("fetchAllFilings", () => {
       )
 
       // Verify filings from different sources are included
-      expect(result.filter((f) => f.filingDate === "2024-01-01")).toHaveLength(1000) // recent
-      expect(result.filter((f) => f.filingDate === "2023-01-01")).toHaveLength(500) // file 1
-      expect(result.filter((f) => f.filingDate === "2022-01-01")).toHaveLength(500) // file 2
+      expect(result.filter((f: FilingRecord) => f.filingDate === "2024-01-01")).toHaveLength(1000) // recent
+      expect(result.filter((f: FilingRecord) => f.filingDate === "2023-01-01")).toHaveLength(500) // file 1
+      expect(result.filter((f: FilingRecord) => f.filingDate === "2022-01-01")).toHaveLength(500) // file 2
     })
 
     it("handles single paginated file", async () => {
