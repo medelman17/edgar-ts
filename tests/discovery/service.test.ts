@@ -14,14 +14,34 @@ type MockHttpResponse = {
 }
 
 /**
+ * Helper to create mock parallel arrays from filing records
+ */
+function createParallelArrays(filings: Array<Partial<FilingRecord>>) {
+  return {
+    accessionNumber: filings.map((f) => f.accessionNumber ?? "0001193125-24-100001"),
+    filingDate: filings.map((f) => f.filingDate ?? "2024-06-01"),
+    reportDate: filings.map((f) => f.reportDate ?? "2024-06-01"),
+    acceptanceDateTime: filings.map((f) => f.acceptanceDateTime ?? "2024-06-01T16:00:00Z"),
+    act: filings.map((f) => f.act ?? "34"),
+    form: filings.map((f) => f.form ?? "8-K"),
+    fileNumber: filings.map((f) => f.fileNumber ?? "001-36743"),
+    primaryDocument: filings.map((f) => f.primaryDocument ?? "test.htm"),
+    primaryDocDescription: filings.map((f) => f.primaryDocDescription ?? ""),
+    size: filings.map((f) => f.size ?? 100000),
+    isXBRL: filings.map((f) => f.isXBRL ?? 0),
+    isInlineXBRL: filings.map((f) => f.isInlineXBRL ?? 0),
+  }
+}
+
+/**
  * Create a mock SubmissionsResponse with specified filings
  */
-function createMockSubmissionsResponse(filings: FilingRecord[]): SubmissionsResponse {
+function createMockSubmissionsResponse(filings: Array<Partial<FilingRecord>>): SubmissionsResponse {
   return {
     cik: "0000320193",
     name: "Apple Inc.",
     filings: {
-      recent: filings,
+      recent: createParallelArrays(filings),
       files: [],
     },
   }
@@ -117,7 +137,7 @@ describe("DiscoveryService", () => {
 
   describe("date range filtering", () => {
     it("should filter filings within date range", async () => {
-      const mockFilings: FilingRecord[] = [
+      const mockFilings = [
         {
           accessionNumber: "0001193125-23-123456",
           filingDate: "2023-12-31", // Before range
@@ -189,7 +209,7 @@ describe("DiscoveryService", () => {
     })
 
     it("should include boundary dates (inclusive range)", async () => {
-      const mockFilings: FilingRecord[] = [
+      const mockFilings = [
         {
           accessionNumber: "0001193125-24-100001",
           filingDate: "2024-01-01", // Exact 'from'
@@ -235,7 +255,7 @@ describe("DiscoveryService", () => {
 
   describe("form type filtering", () => {
     it("should use default form types when not specified", async () => {
-      const mockFilings: FilingRecord[] = [
+      const mockFilings = [
         {
           accessionNumber: "0001193125-24-100001",
           filingDate: "2024-06-01",
@@ -295,7 +315,7 @@ describe("DiscoveryService", () => {
     })
 
     it("should respect custom form types", async () => {
-      const mockFilings: FilingRecord[] = [
+      const mockFilings = [
         {
           accessionNumber: "0001193125-24-100001",
           filingDate: "2024-06-01",
@@ -341,7 +361,7 @@ describe("DiscoveryService", () => {
     })
 
     it("should include amendments in default form types", async () => {
-      const mockFilings: FilingRecord[] = [
+      const mockFilings = [
         {
           accessionNumber: "0001193125-24-100001",
           filingDate: "2024-06-01",
@@ -390,7 +410,7 @@ describe("DiscoveryService", () => {
 
   describe("normalization", () => {
     it("should normalize CIK to 10-digit padded format", async () => {
-      const mockFilings: FilingRecord[] = [
+      const mockFilings = [
         {
           accessionNumber: "0001193125-24-100001",
           filingDate: "2024-06-01",
@@ -421,7 +441,7 @@ describe("DiscoveryService", () => {
     })
 
     it("should normalize accession numbers to canonical hyphenated format", async () => {
-      const mockFilings: FilingRecord[] = [
+      const mockFilings = [
         {
           accessionNumber: "000119312524100001", // Compact format
           filingDate: "2024-06-01",
@@ -452,7 +472,7 @@ describe("DiscoveryService", () => {
     })
 
     it("should normalize form types to uppercase", async () => {
-      const mockFilings: FilingRecord[] = [
+      const mockFilings = [
         {
           accessionNumber: "0001193125-24-100001",
           filingDate: "2024-06-01",
@@ -486,7 +506,7 @@ describe("DiscoveryService", () => {
 
   describe("deduplication and sorting", () => {
     it("should deduplicate filings by (cik, accessionNo) identity", async () => {
-      const mockFilings: FilingRecord[] = [
+      const mockFilings = [
         {
           accessionNumber: "0001193125-24-100001",
           filingDate: "2024-06-01",
@@ -530,7 +550,7 @@ describe("DiscoveryService", () => {
     })
 
     it("should sort filings by filingDate asc, then accessionNo asc", async () => {
-      const mockFilings: FilingRecord[] = [
+      const mockFilings = [
         {
           accessionNumber: "0001193125-24-200000",
           filingDate: "2024-09-01",
@@ -594,7 +614,7 @@ describe("DiscoveryService", () => {
 
   describe("filing URL generation", () => {
     it("should generate valid SEC viewer URLs", async () => {
-      const mockFilings: FilingRecord[] = [
+      const mockFilings = [
         {
           accessionNumber: "0001193125-24-100001",
           filingDate: "2024-06-01",

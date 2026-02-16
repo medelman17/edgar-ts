@@ -30,19 +30,23 @@ export class ExhibitService {
   /**
    * Build filing index URL for SEC archive.
    *
-   * URL pattern: https://www.sec.gov/Archives/edgar/data/{cik}/{accessionCompact}/index.html
+   * URL pattern: https://www.sec.gov/Archives/edgar/data/{cik}/{accessionCompact}/{accessionNo}-index.html
+   *
+   * The SEC filing index page (with exhibit metadata table) uses the accession
+   * number as a filename prefix, NOT plain "index.html" (which returns a
+   * directory listing without exhibit type/sequence information).
    *
    * @param cik - Normalized 10-digit CIK (from FilingRef)
    * @param accessionNo - Canonical hyphenated accession (from FilingRef)
    * @returns Complete filing index URL
    *
    * @example
-   * buildFilingIndexUrl("0000320193", "0001193125-20-123456")
-   * // "https://www.sec.gov/Archives/edgar/data/0000320193/000119312520123456/index.html"
+   * buildFilingIndexUrl("0000320193", "0000320193-25-000008")
+   * // "https://www.sec.gov/Archives/edgar/data/0000320193/000032019325000008/0000320193-25-000008-index.html"
    */
   private buildFilingIndexUrl(cik: string, accessionNo: string): string {
     const accessionCompact = accessionNo.replace(/-/g, "")
-    return `https://www.sec.gov/Archives/edgar/data/${cik}/${accessionCompact}/index.html`
+    return `https://www.sec.gov/Archives/edgar/data/${cik}/${accessionCompact}/${accessionNo}-index.html`
   }
 
   /**
@@ -102,12 +106,22 @@ export class ExhibitService {
     // 3. Parse exhibits from HTML table
     const rawExhibits = parseExhibitTableFromHtml(htmlContent)
 
-    // 4. Normalize and build ExhibitRef objects
-    const normalized = rawExhibits.map((raw) => {
-      const exhibit: ExhibitRef = {
-        accessionNo: filing.accessionNo, // reuse from filing
+    // 4. Filter to exhibit rows only, normalize, and build ExhibitRef objects
+    // The SEC filing index table includes ALL documents (primary doc, graphics, XBRL, etc.)
+    // Only rows whose type normalizes to a valid exhibit pattern (EX-##) are included.
+    const normalized: ExhibitRef[] = []
+    for (const raw of rawExhibits) {
+      // Skip non-exhibit types (10-Q, GRAPHIC, EX-101.SCH, etc.)
+      let type: string
+      try {
+        type = normalizeExhibitType(raw.type)
+      } catch {
+        continue
+      }
+      normalized.push({
+        accessionNo: filing.accessionNo,
         sequence: normalizeSequence(raw.sequence),
-        type: normalizeExhibitType(raw.type),
+        type,
         description: normalizeDescription(raw.description),
         filename: raw.filename,
         exhibitUrl: this.buildExhibitUrl(
@@ -115,9 +129,8 @@ export class ExhibitService {
           filing.accessionNo,
           raw.filename,
         ),
-      }
-      return exhibit
-    })
+      })
+    }
 
     // 5. Deduplicate and sort
     return dedupeAndSortExhibits(normalized)

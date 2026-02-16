@@ -3,7 +3,8 @@
 import { ParseError } from "@/errors"
 import type { SecHttpClient } from "@/http"
 import { normalizeCik } from "./normalization"
-import type { FilingRecord, SubmissionsResponse } from "./types"
+import type { FilingRecord, ParallelFilingArrays, SubmissionsResponse } from "./types"
+import { recordsFromParallelArrays } from "./types"
 
 /**
  * Fetch all filings for a CIK from SEC Submissions API with pagination.
@@ -55,17 +56,15 @@ export async function fetchAllFilings(
   }
 
   // 3. Collect recent filings (first 1000 or fewer)
-  const allFilings: FilingRecord[] = [...(submissions.filings.recent ?? [])]
+  // SEC returns parallel arrays, not an array of objects
+  const allFilings: FilingRecord[] = recordsFromParallelArrays(submissions.filings.recent)
 
   // 4. Iterate through paginated files
-  // IMPORTANT: Paginated files use www.sec.gov base, NOT data.sec.gov (per research)
+  // Paginated files live under data.sec.gov/submissions/ (same host as primary endpoint)
   const paginatedFiles = submissions.filings.files ?? []
 
   for (const file of paginatedFiles) {
-    // Construct paginated file URL
-    // Based on research: https://www.sec.gov/{file.name}
-    // where file.name is a relative path like "submissions/CIK0000320193-submissions-001.json"
-    const fileUrl = `https://www.sec.gov/${file.name}`
+    const fileUrl = `https://data.sec.gov/submissions/${file.name}`
 
     const paginatedResponse = (await httpClient.request(fileUrl)) as unknown as {
       json(): Promise<unknown>
@@ -82,68 +81,10 @@ export async function fetchAllFilings(
       })
     }
 
-    // The paginated file has the same structure as the primary response
-    // It should contain a FilingRecord array, but the exact key might vary
-    // Based on SEC structure, paginated files mirror the primary structure
-    // They should have an array of filing records at the top level or similar key
-
-    // According to research, paginated files return arrays directly or in same structure
-    // Let me check the actual structure - typically it's an array at a known key
-    // For now, assuming it has the same structure with arrays keyed by field names
-
-    // Actually, reviewing the research more carefully:
-    // Paginated files contain the same field structure (arrays keyed by column names)
-    // We need to reconstruct FilingRecord[] from parallel arrays
-
-    // The safest approach is to assume the paginated file mirrors the structure
-    // and has parallel arrays for each field (accessionNumber, filingDate, etc.)
-    // Let's extract those and build FilingRecord objects
-
-    // For simplicity and based on the research examples, let's assume the paginated
-    // response has a structure we can extract filings from
-    // Since the exact structure isn't 100% clear from research, we'll handle both cases:
-
-    // Case 1: Direct array of filing records
-    if (Array.isArray(paginatedData)) {
-      allFilings.push(...(paginatedData as FilingRecord[]))
-      continue
-    }
-
-    // Case 2: Structured format with parallel arrays (like primary response)
-    // This is the more likely case based on SEC API patterns
-    if (paginatedData.accessionNumber && Array.isArray(paginatedData.accessionNumber)) {
-      // Reconstruct filing records from parallel arrays
-      const accessionNumbers = paginatedData.accessionNumber as string[]
-      const filingDates = (paginatedData.filingDate as string[]) ?? []
-      const reportDates = (paginatedData.reportDate as string[]) ?? []
-      const acceptanceDateTimes = (paginatedData.acceptanceDateTime as string[]) ?? []
-      const acts = (paginatedData.act as string[]) ?? []
-      const forms = (paginatedData.form as string[]) ?? []
-      const fileNumbers = (paginatedData.fileNumber as string[]) ?? []
-      const primaryDocuments = (paginatedData.primaryDocument as string[]) ?? []
-      const primaryDocDescriptions = (paginatedData.primaryDocDescription as string[]) ?? []
-      const sizes = (paginatedData.size as number[]) ?? []
-      const isXBRLs = (paginatedData.isXBRL as number[]) ?? []
-      const isInlineXBRLs = (paginatedData.isInlineXBRL as number[]) ?? []
-
-      // Build FilingRecord objects
-      for (let i = 0; i < accessionNumbers.length; i++) {
-        const filing: FilingRecord = {
-          accessionNumber: accessionNumbers[i] ?? "",
-          filingDate: filingDates[i] ?? "",
-          reportDate: reportDates[i] ?? "",
-          acceptanceDateTime: acceptanceDateTimes[i] ?? "",
-          act: acts[i] ?? "",
-          form: forms[i] ?? "",
-          fileNumber: fileNumbers[i] ?? "",
-          primaryDocument: primaryDocuments[i] ?? "",
-          primaryDocDescription: primaryDocDescriptions[i],
-          size: sizes[i] ?? 0,
-          isXBRL: isXBRLs[i] ?? 0,
-          isInlineXBRL: isInlineXBRLs[i] ?? 0,
-        }
-        allFilings.push(filing)
-      }
+    // Paginated files use the same parallel-array format as recent
+    const paginatedArrays = paginatedData as unknown as ParallelFilingArrays
+    if (paginatedArrays.accessionNumber && Array.isArray(paginatedArrays.accessionNumber)) {
+      allFilings.push(...recordsFromParallelArrays(paginatedArrays))
     }
   }
 

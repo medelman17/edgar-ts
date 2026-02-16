@@ -115,7 +115,7 @@ describe("fetchWithTimeoutAndAbort", () => {
     // Mock fetch that waits for signal abort
     global.fetch = vi.fn().mockImplementation(
       (_url, init) =>
-        new Promise((resolve, reject) => {
+        new Promise((_resolve, reject) => {
           const signal = init?.signal
           if (signal) {
             signal.addEventListener("abort", () => {
@@ -193,7 +193,7 @@ describe("fetchWithTimeoutAndAbort", () => {
     // Mock fetch that waits for abort
     global.fetch = vi.fn().mockImplementation(
       ({ signal }) =>
-        new Promise((resolve, reject) => {
+        new Promise((_resolve, reject) => {
           signal.addEventListener("abort", () => {
             reject(new DOMException("Aborted", "AbortError"))
           })

@@ -1,14 +1,45 @@
-// SHA-256 digest computation using W3C Web Crypto API
+// SHA-256 digest computation using Web Crypto API
 // Reference: NIST FIPS 180-4 (SHA-256 specification)
 
-// Use globalThis.crypto for cross-runtime compatibility (Node 18+, Bun).
-// The declare ensures TypeScript sees the type without @types/node or DOM lib.
-declare const globalThis: {
-  crypto: {
-    subtle: {
-      digest(algorithm: string, data: Uint8Array | ArrayBuffer): Promise<ArrayBuffer>
-    }
+// Type for the Web Crypto subtle interface (avoids @types/node dependency).
+type SubtleCrypto = {
+  digest(algorithm: string, data: Uint8Array | ArrayBuffer): Promise<ArrayBuffer>
+}
+
+/**
+ * Lazily resolve crypto.subtle across Node.js and Bun runtimes.
+ *
+ * Strategy:
+ * 1. Try globalThis.crypto.subtle (Bun, Node 19+, browsers)
+ * 2. Fall back to node:crypto webcrypto (Node 18+, vitest environments)
+ */
+let _subtle: SubtleCrypto | undefined
+
+async function getSubtle(): Promise<SubtleCrypto> {
+  if (_subtle) return _subtle
+
+  // Try globalThis first (available in Bun, Node 19+, browsers)
+  const g = globalThis as unknown as { crypto?: { subtle?: SubtleCrypto } }
+  if (g.crypto?.subtle) {
+    _subtle = g.crypto.subtle
+    return _subtle
   }
+
+  // Fall back to node:crypto for Node 18 / vitest environments where
+  // globalThis.crypto may not be defined
+  try {
+    // @ts-expect-error -- no @types/node; module exists at runtime on Node 18+
+    const nodeCrypto = await import("node:crypto")
+    const wc = (nodeCrypto as unknown as { webcrypto?: { subtle?: SubtleCrypto } }).webcrypto
+    if (wc?.subtle) {
+      _subtle = wc.subtle
+      return _subtle
+    }
+  } catch {
+    // not in a Node.js environment
+  }
+
+  throw new Error("Web Crypto API not available in this runtime")
 }
 
 /**
@@ -30,8 +61,8 @@ declare const globalThis: {
  * ```
  */
 export async function computeSha256Hex(data: Uint8Array): Promise<string> {
-  // Compute SHA-256 digest using Web Crypto API
-  const hashBuffer = await globalThis.crypto.subtle.digest("SHA-256", data)
+  const subtle = await getSubtle()
+  const hashBuffer = await subtle.digest("SHA-256", data)
 
   // Convert ArrayBuffer to lowercase hex string
   const hashArray = Array.from(new Uint8Array(hashBuffer))
