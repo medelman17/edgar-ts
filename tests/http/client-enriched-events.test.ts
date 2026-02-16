@@ -482,11 +482,5 @@ describe("SecHttpClient enriched telemetry events", () => {
       expect(startEvents[0].operation).toBe("unknown")
       expect(startEvents[0].endpointClass).toBe("unknown")
     })
-
-    it("existing client.test.ts tests still pass", async () => {
-      // This is a placeholder to remind us to verify existing tests pass
-      // The actual verification happens when we run: pnpm vitest run tests/http/client.test.ts
-      expect(true).toBe(true)
-    })
   })
 })
