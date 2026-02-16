@@ -1,4 +1,6 @@
 import { ConfigurationError } from "@/errors"
+import { DiscoveryService } from "@/discovery"
+import { SecHttpClient } from "@/http"
 import type {
   DiscoverFilingsInput,
   DownloadedExhibit,
@@ -20,6 +22,8 @@ export class EdgarClient {
   private readonly options: Required<
     Pick<EdgarClientOptions, "userAgent" | "maxRequestsPerSecond" | "timeoutMs">
   > & { retries: RetryOptions; telemetry: EdgarClientOptions["telemetry"] }
+  private readonly httpClient: SecHttpClient
+  private readonly discoveryService: DiscoveryService
 
   constructor(options: EdgarClientOptions) {
     if (!options.userAgent || options.userAgent.trim().length === 0) {
@@ -33,11 +37,14 @@ export class EdgarClient {
       retries: { ...DEFAULT_RETRY, ...options.retries },
       telemetry: options.telemetry,
     }
+
+    // Initialize HTTP client and discovery service
+    this.httpClient = new SecHttpClient(this.options)
+    this.discoveryService = new DiscoveryService(this.httpClient)
   }
 
-  async discoverFilings(_input: DiscoverFilingsInput): Promise<FilingRef[]> {
-    // TODO: W-014, W-015
-    throw new Error("Not yet implemented")
+  async discoverFilings(input: DiscoverFilingsInput): Promise<FilingRef[]> {
+    return this.discoveryService.discoverFilings(input)
   }
 
   async listExhibits(_filing: FilingRef): Promise<ExhibitRef[]> {

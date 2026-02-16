@@ -11,4 +11,6 @@ export { dedupeAndSort } from "./deduplication"
 
 export { fetchAllFilings } from "./pagination"
 
+export { DiscoveryService } from "./service"
+
 export type { SubmissionsResponse, FilingRecord, PaginatedFileRef } from "./types"
