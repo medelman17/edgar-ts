@@ -2,7 +2,7 @@
 
 **Project:** edgar-ts — TypeScript library for SEC EDGAR filing discovery and contract exhibit acquisition
 
-**Last Updated:** 2026-02-16 (Phase 3 Plan 01 complete)
+**Last Updated:** 2026-02-16 (Phase 3 Plan 03 complete)
 
 ---
 
@@ -24,7 +24,7 @@
 
 **Current Phase:** 03
 
-**Current Plan:** 02 (Not started)
+**Current Plan:** 03 (Complete)
 
 **Phase 1 Progress (Complete):**
 - Plan 01 (Rate limiting & timeout foundations) ✓ Complete
@@ -36,10 +36,10 @@
 - Plan 02 (SEC Submissions API pagination) ✓ Complete
 - Plan 03 (DiscoveryService integration & client wiring) ✓ Complete
 
-**Phase 3 Progress:**
+**Phase 3 Progress (Complete):**
 - Plan 01 (Exhibit parsing & normalization) ✓ Complete
-- Plan 02 (ExhibitService integration) — Not started
-- Plan 03 (Contract filtering & client wiring) — Not started
+- Plan 02 (Exhibit deduplication & contract filtering) ✓ Complete
+- Plan 03 (ExhibitService integration & client wiring) ✓ Complete
 
 **Phase 1 Completed:**
 - TokenBucket rate limiter with 1-10 req/s bounds
@@ -61,13 +61,16 @@
 - EdgarClient.discoverFilings() fully functional with delegation to DiscoveryService
 - 82 new tests (35 normalization + 11 deduplication + 17 pagination + 15 service + 4 client integration)
 
-**Phase 3 Plan 01 Completed:**
+**Phase 3 Completed:**
 - parseExhibitTableFromHtml: custom HTML table parsing without DOMParser (Node 18+ compatible)
 - normalizeSequence: numeric validation, preserves leading zeros for identity uniqueness
 - normalizeExhibitType: separator normalization (_, /, -) to canonical hyphenated format
 - normalizeDescription: converts empty/whitespace to undefined
-- RawExhibit type for intermediate parsing results
-- 63 new tests (21 parsing + 42 normalization) covering all format variants and edge cases
+- dedupeAndSortExhibits: filing-local identity deduplication with numeric sequence sorting
+- isContractExhibit: EX-10* pattern matching for contract filtering
+- ExhibitService: complete orchestration flow (fetch → parse → normalize → dedupe → sort)
+- EdgarClient.listExhibits() and listContractExhibits() fully functional with delegation to ExhibitService
+- 115 new tests (63 Plan 01 + 47 Plan 02 + 25 Plan 03) covering parsing, normalization, deduplication, filtering, orchestration
 
 ---
 
@@ -92,6 +95,8 @@
 | 02-filing-discovery-normalization | 02 | 413s | 1 | 5 | ✓ Complete |
 | 02-filing-discovery-normalization | 03 | 307s | 2 | 5 | ✓ Complete |
 | 03-exhibit-enumeration-contract-filtering | 01 | 230s | 2 | 5 | ✓ Complete |
+| 03-exhibit-enumeration-contract-filtering | 02 | 152s | 2 | 4 | ✓ Complete |
+| 03-exhibit-enumeration-contract-filtering | 03 | 259s | 2 | 5 | ✓ Complete |
 
 ## Accumulated Context
 
@@ -121,6 +126,12 @@
 | Custom HTML parsing without DOMParser | DOMParser not available in Node 18+; regex-based parsing maintains zero-dep requirement | ✓ Applied (Phase 3 Plan 01) |
 | Preserve leading zeros in exhibit sequence | Filing tables may contain both "1" and "001" as distinct sequences; preservation ensures identity uniqueness | ✓ Applied (Phase 3 Plan 01) |
 | Separator normalization to hyphen | SEC types use _, /, - separators; canonical hyphenated format aligns with EDGAR documentation | ✓ Applied (Phase 3 Plan 01) |
+| Filing-local identity for exhibit deduplication | Identity key is accessionNo:sequence (not cik:accessionNo); prevents false deduplication across filings | ✓ Applied (Phase 3 Plan 02) |
+| Numeric sequence sort (not lexicographic) | Parse sequence to Number for comparison; prevents multi-digit errors (10 after 2, not before) | ✓ Applied (Phase 3 Plan 02) |
+| Contract filter regex pattern | /^EX-10(\.\d+|[A-Z])?$/ matches all EX-10 variants; anchors prevent partial matches | ✓ Applied (Phase 3 Plan 02) |
+| Cast SecHttpClient response to unknown then text() | HttpResponse type lacks text() method; matches Phase 2 json() pattern with unknown casting | ✓ Applied (Phase 3 Plan 03) |
+| ExhibitService mirrors DiscoveryService pattern | Service class with httpClient dependency; client delegates to service; consistent orchestration flow | ✓ Applied (Phase 3 Plan 03) |
+| SEC archive URLs use compact accession | Filing index and exhibit URLs require accession without hyphens; matches SEC API conventions | ✓ Applied (Phase 3 Plan 03) |
 
 ### Architecture Highlights
 
@@ -173,6 +184,6 @@ When planning Phase 1, refer to:
 ---
 
 **Last Session:**
-- Stopped at: Completed Phase 3 Plan 01 (HTML Parsing & Normalization Foundations) - 2 tasks, 63 tests, 230s
-- Timestamp: 2026-02-16T04:11:02Z
-- Next action: Phase 3 Plan 02 (ExhibitService integration & client wiring)
+- Stopped at: Completed Phase 3 Plan 03 (ExhibitService Integration & Client Wiring) - 2 tasks, 25 tests, 259s
+- Timestamp: 2026-02-16T04:18:48Z
+- Next action: Phase 4 (Download service implementation)
