@@ -297,4 +297,323 @@ describe("EdgarClient", () => {
       expect(filings[0]?.formType).toBe("DEF 14A")
     })
   })
+
+  describe("listExhibits", () => {
+    it("lists all exhibits for a filing with count and field verification", async () => {
+      const mockIndexHtml = `
+        <!DOCTYPE html>
+        <html>
+        <body>
+          <table class="tableFile">
+            <tr><th>Seq</th><th>Description</th><th>Document</th><th>Type</th><th>Size</th></tr>
+            <tr>
+              <td>1</td>
+              <td>Employment Agreement</td>
+              <td><a href="/Archives/edgar/data/320193/000119312520123456/ex10-1.htm">ex10-1.htm</a></td>
+              <td>EX-10.1</td>
+              <td>12345</td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td>Consent of Independent Auditor</td>
+              <td><a href="/Archives/edgar/data/320193/000119312520123456/ex23-1.htm">ex23-1.htm</a></td>
+              <td>EX-23.1</td>
+              <td>6789</td>
+            </tr>
+          </table>
+        </body>
+        </html>
+      `
+
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        text: async () => mockIndexHtml,
+      })
+
+      const client = new EdgarClient({
+        userAgent: "TestBot/1.0 (test@example.com)",
+      })
+
+      const filing = {
+        cik: "0000320193",
+        accessionNo: "0001193125-20-123456",
+        formType: "10-K",
+        filingDate: "2024-01-15",
+        filingUrl: "https://www.sec.gov/cgi-bin/viewer?action=view&cik=0000320193&accession_number=000119312520123456&xbrl_type=v",
+      }
+
+      const exhibits = await client.listExhibits(filing)
+
+      expect(exhibits).toHaveLength(2)
+      expect(exhibits[0]).toEqual({
+        accessionNo: "0001193125-20-123456",
+        sequence: "1",
+        type: "EX-10.1",
+        description: "Employment Agreement",
+        filename: "ex10-1.htm",
+        exhibitUrl: "https://www.sec.gov/Archives/edgar/data/0000320193/000119312520123456/ex10-1.htm",
+      })
+      expect(exhibits[1]).toEqual({
+        accessionNo: "0001193125-20-123456",
+        sequence: "2",
+        type: "EX-23.1",
+        description: "Consent of Independent Auditor",
+        filename: "ex23-1.htm",
+        exhibitUrl: "https://www.sec.gov/Archives/edgar/data/0000320193/000119312520123456/ex23-1.htm",
+      })
+    })
+
+    it("normalizes exhibit types (EX_10 → EX-10)", async () => {
+      const mockIndexHtml = `
+        <table class="tableFile">
+          <tr><th>Seq</th><th>Description</th><th>Document</th><th>Type</th></tr>
+          <tr>
+            <td>1</td>
+            <td>Contract</td>
+            <td><a href="ex10-1.htm">ex10-1.htm</a></td>
+            <td>EX_10.1</td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>Contract</td>
+            <td><a href="ex10-2.htm">ex10-2.htm</a></td>
+            <td>ex/10.2</td>
+          </tr>
+        </table>
+      `
+
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        text: async () => mockIndexHtml,
+      })
+
+      const client = new EdgarClient({
+        userAgent: "TestBot/1.0 (test@example.com)",
+      })
+
+      const filing = {
+        cik: "0000320193",
+        accessionNo: "0001193125-20-123456",
+        formType: "10-K",
+        filingDate: "2024-01-15",
+        filingUrl: "https://example.com",
+      }
+
+      const exhibits = await client.listExhibits(filing)
+
+      expect(exhibits[0]?.type).toBe("EX-10.1")
+      expect(exhibits[1]?.type).toBe("EX-10.2")
+    })
+
+    it("deduplicates and sorts exhibits correctly", async () => {
+      const mockIndexHtml = `
+        <table class="tableFile">
+          <tr><th>Seq</th><th>Description</th><th>Document</th><th>Type</th></tr>
+          <tr>
+            <td>10</td>
+            <td>Contract 10</td>
+            <td><a href="ex10-10.htm">ex10-10.htm</a></td>
+            <td>EX-10.10</td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>Contract 2</td>
+            <td><a href="ex10-2.htm">ex10-2.htm</a></td>
+            <td>EX-10.2</td>
+          </tr>
+          <tr>
+            <td>1</td>
+            <td>Contract 1</td>
+            <td><a href="ex10-1.htm">ex10-1.htm</a></td>
+            <td>EX-10.1</td>
+          </tr>
+          <tr>
+            <td>1</td>
+            <td>Duplicate</td>
+            <td><a href="ex10-1-dupe.htm">ex10-1-dupe.htm</a></td>
+            <td>EX-10.1</td>
+          </tr>
+        </table>
+      `
+
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        text: async () => mockIndexHtml,
+      })
+
+      const client = new EdgarClient({
+        userAgent: "TestBot/1.0 (test@example.com)",
+      })
+
+      const filing = {
+        cik: "0000320193",
+        accessionNo: "0001193125-20-123456",
+        formType: "10-K",
+        filingDate: "2024-01-15",
+        filingUrl: "https://example.com",
+      }
+
+      const exhibits = await client.listExhibits(filing)
+
+      // Should deduplicate (3 unique) and sort numerically by sequence
+      expect(exhibits).toHaveLength(3)
+      expect(exhibits[0]?.sequence).toBe("1")
+      expect(exhibits[1]?.sequence).toBe("2")
+      expect(exhibits[2]?.sequence).toBe("10") // numeric sort: 10 after 2
+    })
+  })
+
+  describe("listContractExhibits", () => {
+    it("filters to only EX-10* exhibits", async () => {
+      const mockIndexHtml = `
+        <table class="tableFile">
+          <tr><th>Seq</th><th>Description</th><th>Document</th><th>Type</th></tr>
+          <tr>
+            <td>1</td>
+            <td>Contract A</td>
+            <td><a href="ex10-1.htm">ex10-1.htm</a></td>
+            <td>EX-10.1</td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>List of Subsidiaries</td>
+            <td><a href="ex21-1.htm">ex21-1.htm</a></td>
+            <td>EX-21</td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td>Contract B</td>
+            <td><a href="ex10-2.htm">ex10-2.htm</a></td>
+            <td>EX-10.2</td>
+          </tr>
+          <tr>
+            <td>4</td>
+            <td>Press Release</td>
+            <td><a href="ex99-1.htm">ex99-1.htm</a></td>
+            <td>EX-99.1</td>
+          </tr>
+        </table>
+      `
+
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        text: async () => mockIndexHtml,
+      })
+
+      const client = new EdgarClient({
+        userAgent: "TestBot/1.0 (test@example.com)",
+      })
+
+      const filing = {
+        cik: "0000320193",
+        accessionNo: "0001193125-20-123456",
+        formType: "10-K",
+        filingDate: "2024-01-15",
+        filingUrl: "https://example.com",
+      }
+
+      const contracts = await client.listContractExhibits(filing)
+
+      expect(contracts).toHaveLength(2)
+      expect(contracts[0]?.type).toBe("EX-10.1")
+      expect(contracts[1]?.type).toBe("EX-10.2")
+    })
+
+    it("returns empty array when no contract exhibits present", async () => {
+      const mockIndexHtml = `
+        <table class="tableFile">
+          <tr><th>Seq</th><th>Description</th><th>Document</th><th>Type</th></tr>
+          <tr>
+            <td>1</td>
+            <td>List of Subsidiaries</td>
+            <td><a href="ex21-1.htm">ex21-1.htm</a></td>
+            <td>EX-21</td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>Press Release</td>
+            <td><a href="ex99-1.htm">ex99-1.htm</a></td>
+            <td>EX-99.1</td>
+          </tr>
+        </table>
+      `
+
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        text: async () => mockIndexHtml,
+      })
+
+      const client = new EdgarClient({
+        userAgent: "TestBot/1.0 (test@example.com)",
+      })
+
+      const filing = {
+        cik: "0000320193",
+        accessionNo: "0001193125-20-123456",
+        formType: "10-K",
+        filingDate: "2024-01-15",
+        filingUrl: "https://example.com",
+      }
+
+      const contracts = await client.listContractExhibits(filing)
+
+      expect(contracts).toEqual([])
+    })
+
+    it("includes all EX-10 variants (EX-10, EX-10.1, EX-10A)", async () => {
+      const mockIndexHtml = `
+        <table class="tableFile">
+          <tr><th>Seq</th><th>Description</th><th>Document</th><th>Type</th></tr>
+          <tr>
+            <td>1</td>
+            <td>Contract Base</td>
+            <td><a href="ex10.htm">ex10.htm</a></td>
+            <td>EX-10</td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>Contract Dotted</td>
+            <td><a href="ex10-1.htm">ex10-1.htm</a></td>
+            <td>EX-10.1</td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td>Contract Letter</td>
+            <td><a href="ex10a.htm">ex10a.htm</a></td>
+            <td>EX-10A</td>
+          </tr>
+        </table>
+      `
+
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        text: async () => mockIndexHtml,
+      })
+
+      const client = new EdgarClient({
+        userAgent: "TestBot/1.0 (test@example.com)",
+      })
+
+      const filing = {
+        cik: "0000320193",
+        accessionNo: "0001193125-20-123456",
+        formType: "10-K",
+        filingDate: "2024-01-15",
+        filingUrl: "https://example.com",
+      }
+
+      const contracts = await client.listContractExhibits(filing)
+
+      expect(contracts).toHaveLength(3)
+      expect(contracts[0]?.type).toBe("EX-10")
+      expect(contracts[1]?.type).toBe("EX-10.1")
+      expect(contracts[2]?.type).toBe("EX-10A")
+    })
+  })
 })

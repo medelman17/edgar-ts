@@ -1,5 +1,6 @@
 import { ConfigurationError } from "@/errors"
 import { DiscoveryService } from "@/discovery"
+import { ExhibitService } from "@/exhibits"
 import { SecHttpClient } from "@/http"
 import type {
   DiscoverFilingsInput,
@@ -24,6 +25,7 @@ export class EdgarClient {
   > & { retries: RetryOptions; telemetry: EdgarClientOptions["telemetry"] }
   private readonly httpClient: SecHttpClient
   private readonly discoveryService: DiscoveryService
+  private readonly exhibitService: ExhibitService
 
   constructor(options: EdgarClientOptions) {
     if (!options.userAgent || options.userAgent.trim().length === 0) {
@@ -38,23 +40,22 @@ export class EdgarClient {
       telemetry: options.telemetry,
     }
 
-    // Initialize HTTP client and discovery service
+    // Initialize HTTP client and services
     this.httpClient = new SecHttpClient(this.options)
     this.discoveryService = new DiscoveryService(this.httpClient)
+    this.exhibitService = new ExhibitService(this.httpClient)
   }
 
   async discoverFilings(input: DiscoverFilingsInput): Promise<FilingRef[]> {
     return this.discoveryService.discoverFilings(input)
   }
 
-  async listExhibits(_filing: FilingRef): Promise<ExhibitRef[]> {
-    // TODO: W-017
-    throw new Error("Not yet implemented")
+  async listExhibits(filing: FilingRef): Promise<ExhibitRef[]> {
+    return this.exhibitService.listExhibits(filing)
   }
 
-  async listContractExhibits(_filing: FilingRef): Promise<ExhibitRef[]> {
-    // TODO: W-019
-    throw new Error("Not yet implemented")
+  async listContractExhibits(filing: FilingRef): Promise<ExhibitRef[]> {
+    return this.exhibitService.listContractExhibits(filing)
   }
 
   async downloadExhibit(_exhibit: ExhibitRef): Promise<DownloadedExhibit> {
