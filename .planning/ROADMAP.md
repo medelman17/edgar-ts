@@ -41,7 +41,10 @@
 6. Errors are classified into typed categories (ConfigurationError, ValidationError, TransportError, RateLimitedError, TimeoutError, NotFoundError, ParseError) with retryable flags
 7. Telemetry hooks (onRequestStart, onRequestEnd, onRetry) fire with structured event data without forcing logging opinions
 
-**Plans:** TBD
+**Plans:**
+- [ ] 01-01-PLAN.md — TokenBucket limiter + timeout/abort wrapper (Wave 1)
+- [ ] 01-02-PLAN.md — Exponential backoff + error mapper (Wave 2)
+- [ ] 01-03-PLAN.md — SecHttpClient orchestrator + integration tests (Wave 3)
 
 ---
 
@@ -131,7 +134,7 @@
 
 | Phase | Name | Plans Complete | Status | Completed |
 |-------|------|----------------|--------|-----------|
-| 1 | HTTP Transport & Rate Limiting | 0/3 | Not started | — |
+| 1 | HTTP Transport & Rate Limiting | 3/3 | Planned | — |
 | 2 | Filing Discovery & Normalization | 0/3 | Not started | — |
 | 3 | Exhibit Enumeration & Contract Filtering | 0/3 | Not started | — |
 | 4 | Exhibit Download & Integrity Verification | 0/2 | Not started | — |
@@ -154,4 +157,4 @@
 
 ---
 
-**Last updated:** 2026-02-15 (initial roadmap creation)
+**Last updated:** 2026-02-15 (Phase 1 planning complete)
