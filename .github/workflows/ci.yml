@@ -25,6 +25,7 @@ jobs:
       - run: pnpm typecheck
 
   test-node:
+    name: Test (Node ${{ matrix.node-version }})
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -41,8 +42,16 @@ jobs:
         if: matrix.node-version != 22
       - run: pnpm exec vitest run --coverage
         if: matrix.node-version == 22
+      - uses: actions/upload-artifact@v4
+        if: matrix.node-version == 22
+        with:
+          name: coverage
+          path: coverage/
       - uses: codecov/codecov-action@v5
         if: matrix.node-version == 22
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: medelman17/edgar-ts
 
   test-bun:
     runs-on: ubuntu-latest
