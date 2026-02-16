@@ -1,2 +1,12 @@
 // Filing discovery — date-bounded search, form filtering, normalization
-// TODO: W-011, W-012, W-013, W-014
+
+export {
+  normalizeCik,
+  normalizeAccession,
+  normalizeFormType,
+  validateDate,
+} from "./normalization"
+
+export { fetchAllFilings } from "./pagination"
+
+export type { SubmissionsResponse, FilingRecord, PaginatedFileRef } from "./types"
