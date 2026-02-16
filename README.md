@@ -67,21 +67,16 @@ for (const filing of filings) {
 #### `discoverFilings(input)`
 
 ```typescript
-// Basic date range query
+// Basic date range query (requires CIK)
 const filings = await client.discoverFilings({
-  from: "2026-01-01",
-  to: "2026-01-31",
-})
-
-// Filter by CIK
-const appleFilings = await client.discoverFilings({
-  from: "2026-01-01",
-  to: "2026-01-31",
   cik: "320193",
+  from: "2026-01-01",
+  to: "2026-01-31",
 })
 
 // Custom form types
 const customFilings = await client.discoverFilings({
+  cik: "320193",
   from: "2026-01-01",
   to: "2026-01-31",
   formTypes: ["8-K"],
