@@ -2,7 +2,7 @@
 
 **Project:** edgar-ts — TypeScript library for SEC EDGAR filing discovery and contract exhibit acquisition
 
-**Last Updated:** 2026-02-16 (Phase 1 Plan 02 complete)
+**Last Updated:** 2026-02-16 (Phase 2 Plan 01 complete)
 
 ---
 
@@ -22,22 +22,34 @@
 
 ## Current Position
 
-**Current Phase:** 01
+**Current Phase:** 02
 
-**Current Plan:** Not started
+**Current Plan:** 02 (not started)
 
-**Phase Progress:**
+**Phase 1 Progress (Complete):**
 - Plan 01 (Rate limiting & timeout foundations) ✓ Complete
 - Plan 02 (Retry policy & error mapper) ✓ Complete
 - Plan 03 (SecHttpClient integration) ✓ Complete
 
-**Completed:**
+**Phase 2 Progress:**
+- Plan 01 (Normalization & deduplication foundations) ✓ Complete
+- Plan 02 (DiscoveryService implementation) - Not started
+
+**Phase 1 Completed:**
 - TokenBucket rate limiter with 1-10 req/s bounds
 - Timeout/abort signal composition with Node 18/20 polyfill
 - Exponential backoff with full jitter (AWS best practice)
 - HTTP status → typed error classification with retryability flags
 - SecHttpClient orchestrator combining all HTTP transport concerns
 - 108 passing tests (92 HTTP module + 16 general)
+
+**Phase 2 Completed:**
+- normalizeCik: zero-pad to 10 digits, validate range, idempotent
+- normalizeAccession: canonical ##########-##-###### format
+- normalizeFormType: uppercase with slash preservation
+- validateDate: YYYY-MM-DD validation with rollover detection
+- dedupeAndSort: identity-based dedup with stable sort
+- 46 new tests (35 normalization + 11 deduplication)
 
 ---
 
@@ -58,6 +70,7 @@
 | 01-http-transport-rate-limiting | 01 | 514s | 2 | 4 | ✓ Complete |
 | 01-http-transport-rate-limiting | 02 | 185s | 2 | 4 | ✓ Complete |
 | 01-http-transport-rate-limiting | 03 | 444s | 2 | 3 | ✓ Complete |
+| 02-filing-discovery-normalization | 01 | 237s | 2 | 5 | ✓ Complete |
 
 ---
 
@@ -77,6 +90,9 @@
 | HTTP status classification (5xx/429/408 retryable) | Aligns with HTTP spec semantics; maximizes retry efficiency | ✓ Applied (Phase 1 Plan 02) |
 | Inline timeout/abort logic in SecHttpClient | Enables headers passthrough for SEC user-agent compliance; preserves Plan 01 deliverables | ✓ Applied (Phase 1 Plan 03) |
 | Retry loop driven by error.retryable flags | Single source of truth from error-mapper; orchestrator independent of HTTP semantics | ✓ Applied (Phase 1 Plan 03) |
+| Date rollover detection for validateDate | JavaScript Date constructor is lenient; compare ISO output to detect invalid dates | ✓ Applied (Phase 2 Plan 01) |
+| Deduplication assumes normalized inputs | dedupeAndSort does NOT normalize internally; prevents double-normalization | ✓ Applied (Phase 2 Plan 01) |
+| Stable sort via localeCompare | ISO 8601 dates are lexicographically sortable; no Date parsing in comparator | ✓ Applied (Phase 2 Plan 01) |
 
 ### Architecture Highlights
 
@@ -129,6 +145,6 @@ When planning Phase 1, refer to:
 ---
 
 **Last Session:**
-- Stopped at: Completed Phase 1 Plan 03 (SecHttpClient integration) - Phase 1 Complete
-- Timestamp: 2026-02-16T03:00:50Z
-- Next action: `/gsd:verify-phase 1` to validate requirements, then plan Phase 2 (Discovery & Normalization)
+- Stopped at: Completed Phase 2 Plan 01 (Normalization & Deduplication) - 2 tasks, 46 tests, 237s
+- Timestamp: 2026-02-16T03:26:27Z
+- Next action: Continue Phase 2 with Plan 02 (DiscoveryService implementation)
