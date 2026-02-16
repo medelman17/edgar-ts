@@ -140,6 +140,12 @@
 
 ## Accumulated Context
 
+### Pending Todos
+
+| File | Title | Area |
+|------|-------|------|
+| [2026-02-16-implement-telemetry-helper-utilities.md](.planning/todos/pending/2026-02-16-implement-telemetry-helper-utilities.md) | Implement telemetry helper utilities | telemetry |
+
 ### Key Decisions
 
 | Decision | Rationale | Status |
