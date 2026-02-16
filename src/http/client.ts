@@ -7,10 +7,16 @@ import { TokenBucket } from "./limiter"
 import { combineSignals } from "./timeout"
 import { calculateBackoffMs } from "./retry"
 import { classifyResponseError } from "./error-mapper"
+import { getRuntime } from "./runtime"
 
 // Web-standard APIs available globally in Node 18+ and Bun
 declare const setTimeout: (callback: () => void, ms: number) => unknown
 declare const fetch: (url: string, init?: { signal?: AbortSignal; headers?: Headers }) => Promise<HttpResponse>
+declare const globalThis: {
+  crypto: {
+    randomUUID: () => string
+  }
+}
 declare class Headers {
   constructor(init?: Record<string, string>)
   has(name: string): boolean
@@ -30,11 +36,17 @@ type HttpResponse = {
   readonly status: number
 }
 
+type RequestContext = {
+  readonly operation: string
+  readonly endpointClass: string
+}
+
 type HttpRequestInit = {
   method?: string
   headers?: Record<string, string> | Headers
   body?: unknown
   signal?: AbortSignal
+  context?: RequestContext
 }
 
 const DEFAULT_MAX_REQUESTS_PER_SECOND = 8
@@ -112,7 +124,7 @@ export class SecHttpClient {
    * Execute HTTP request with rate limiting, timeout, retry, and telemetry.
    *
    * @param url - URL to fetch
-   * @param init - Fetch options (headers, method, signal, etc.)
+   * @param init - Fetch options (headers, method, signal, context, etc.)
    * @returns Promise resolving to Response (caller handles response.ok check and body parsing)
    * @throws EdgarError on retryable errors after exhausting retries, or non-retryable errors immediately
    */
@@ -128,10 +140,21 @@ export class SecHttpClient {
     const method = init?.method ?? "GET"
     const userSignal = init?.signal
 
+    // Extract context (operation, endpointClass) from request options
+    const operation = init?.context?.operation ?? "unknown"
+    const endpointClass = init?.context?.endpointClass ?? "unknown"
+
+    // Get runtime environment
+    const runtime = getRuntime()
+
     // Retry loop
     let attempt = 0
     while (attempt < this.retries.maxAttempts) {
+      // Generate unique requestId for each HTTP attempt
+      const requestId = globalThis.crypto.randomUUID()
+
       try {
+
         // 1. Acquire rate limiter token
         await this.limiter.acquire(1)
 
@@ -140,6 +163,10 @@ export class SecHttpClient {
           url,
           method,
           timestamp: Date.now(),
+          requestId,
+          operation,
+          endpointClass,
+          runtime,
         })
 
         // 3. Fetch with timeout and abort composition
@@ -183,6 +210,10 @@ export class SecHttpClient {
           statusCode: response.status,
           durationMs,
           timestamp: Date.now(),
+          requestId,
+          operation,
+          endpointClass,
+          runtime,
         })
 
         // 5. Check response.ok
@@ -220,6 +251,10 @@ export class SecHttpClient {
           delayMs,
           error: typedError.code,
           timestamp: Date.now(),
+          requestId,
+          operation,
+          endpointClass,
+          runtime,
         })
 
         // Wait for backoff delay
