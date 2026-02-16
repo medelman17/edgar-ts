@@ -2,5 +2,6 @@
 
 export { parseExhibitTableFromHtml } from "./parsing"
 export type { RawExhibit } from "./types"
+export { normalizeSequence, normalizeExhibitType, normalizeDescription } from "./normalization"
 export { dedupeAndSortExhibits } from "./deduplication"
 export { isContractExhibit } from "./filters/contract"
