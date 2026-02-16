@@ -136,6 +136,99 @@ try {
 }
 ```
 
+## Telemetry & Observability
+
+edgar-ts provides optional telemetry helpers for logging and metrics:
+
+### Console Logger
+
+Human-readable colored output for development:
+
+```typescript
+import { EdgarClient } from "edgar-ts"
+import { createConsoleLogger } from "edgar-ts/telemetry"
+
+const client = new EdgarClient({
+  userAgent: "MyBot/1.0 (contact@example.com)",
+  telemetry: createConsoleLogger()
+})
+
+// Outputs:
+// → GET https://data.sec.gov/submissions/... [discoverFilings] {abc12345}
+// ← 200 GET https://data.sec.gov/submissions/... 1234ms [discoverFilings]
+// ⟳ Retry 2/3 after 500ms: GET ... (TIMEOUT)
+```
+
+### Metrics Aggregator
+
+Track request lifecycle and rate limiting metrics:
+
+```typescript
+import { createMetricsAggregator } from "edgar-ts/telemetry"
+
+const metrics = createMetricsAggregator()
+const client = new EdgarClient({
+  userAgent: "MyBot/1.0 (contact@example.com)",
+  telemetry: metrics
+})
+
+// ... make requests ...
+
+const snapshot = metrics.getSnapshot()
+console.log(snapshot.requestsTotal)       // 42
+console.log(snapshot.requestsSuccessful)  // 40
+console.log(snapshot.requestsFailed)      // 2
+console.log(snapshot.latencyByOperation)  // { discoverFilings: { avg: 250, min: 100, max: 1200 } }
+console.log(snapshot.rateLimitedRequests)  // 0
+```
+
+### Structured Logger
+
+JSON Lines output for log aggregation systems:
+
+```typescript
+import { createStructuredLogger } from "edgar-ts/telemetry"
+
+const client = new EdgarClient({
+  userAgent: "MyBot/1.0 (contact@example.com)",
+  telemetry: createStructuredLogger()
+})
+
+// Outputs JSON Lines:
+// {"event":"request.start","url":"...","operation":"discoverFilings",...}
+// {"event":"request.end","statusCode":200,"durationMs":1234,...}
+// {"event":"request.retry","attempt":2,"error":"TIMEOUT",...}
+```
+
+### Custom Telemetry
+
+Implement your own hooks for integration with observability platforms:
+
+```typescript
+const client = new EdgarClient({
+  userAgent: "MyBot/1.0 (contact@example.com)",
+  telemetry: {
+    onRequestStart: (event) => {
+      console.log(`Starting ${event.operation} (${event.requestId})`)
+    },
+    onRequestEnd: (event) => {
+      console.log(`Completed in ${event.durationMs}ms`)
+    },
+    onRetry: (event) => {
+      console.log(`Retry ${event.attempt}/${event.maxAttempts}`)
+    }
+  }
+})
+```
+
+**Telemetry Event Fields:**
+- `requestId` - Unique ID for request correlation
+- `operation` - EdgarClient method (discoverFilings, listExhibits, etc.)
+- `endpointClass` - SEC endpoint type (submissions, archive, data)
+- `runtime` - Detected runtime (node or bun)
+- `timestamp` - Event timestamp (milliseconds)
+- `url`, `method`, `statusCode`, `durationMs` - Request details
+
 ## Development
 
 ```bash

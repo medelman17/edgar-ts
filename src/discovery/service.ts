@@ -100,7 +100,11 @@ export class DiscoveryService {
       )
     }
 
-    const rawFilings = await fetchAllFilings(normalizedCik, this.httpClient)
+    const rawFilings = await fetchAllFilings(
+      normalizedCik,
+      this.httpClient,
+      { operation: "discoverFilings", endpointClass: "submissions" },
+    )
 
     // 3. Filter by date range
     const dateFiltered = rawFilings.filter((filing) => {

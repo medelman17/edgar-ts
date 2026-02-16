@@ -5,7 +5,7 @@
   "type": "module",
   "packageManager": "pnpm@10.6.5",
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=20.0.0"
   },
   "sideEffects": false,
   "exports": {
@@ -16,6 +16,14 @@
       },
       "import": "./dist/index.mjs",
       "require": "./dist/index.cjs"
+    },
+    "./telemetry": {
+      "types": {
+        "import": "./dist/telemetry/index.d.mts",
+        "require": "./dist/telemetry/index.d.cts"
+      },
+      "import": "./dist/telemetry/index.mjs",
+      "require": "./dist/telemetry/index.cjs"
     }
   },
   "main": "./dist/index.cjs",

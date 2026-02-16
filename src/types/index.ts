@@ -32,6 +32,10 @@ export type RequestStartEvent = {
   url: string
   method: string
   timestamp: number
+  requestId: string
+  operation: string
+  endpointClass: string
+  runtime: "node" | "bun"
 }
 
 export type RequestEndEvent = {
@@ -40,6 +44,10 @@ export type RequestEndEvent = {
   statusCode: number
   durationMs: number
   timestamp: number
+  requestId: string
+  operation: string
+  endpointClass: string
+  runtime: "node" | "bun"
 }
 
 export type RetryEvent = {
@@ -49,6 +57,10 @@ export type RetryEvent = {
   delayMs: number
   error: string
   timestamp: number
+  requestId: string
+  operation: string
+  endpointClass: string
+  runtime: "node" | "bun"
 }
 
 export type DiscoverFilingsInput = {

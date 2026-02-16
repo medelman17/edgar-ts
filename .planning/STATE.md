@@ -2,7 +2,7 @@
 
 **Project:** edgar-ts — TypeScript library for SEC EDGAR filing discovery and contract exhibit acquisition
 
-**Last Updated:** 2026-02-16 (Phase 5 Plan 03 complete - Phase 5 COMPLETE)
+**Last Updated:** 2026-02-16 (v0.1.0 and v0.1.1 released to npm)
 
 ---
 
@@ -22,9 +22,11 @@
 
 ## Current Position
 
-**Current Phase:** 05
+**Current Phase:** Post-release maintenance
 
-**Current Plan:** Not started
+**Current Milestone:** v0.1.x (v0.1.0 and v0.1.1 published to npm)
+
+**Active Work:** Enhancement and maintenance tasks (see Pending Todos)
 
 **Phase 1 Progress (Complete):**
 - Plan 01 (Rate limiting & timeout foundations) ✓ Complete
@@ -140,6 +142,12 @@
 
 ## Accumulated Context
 
+### Pending Todos
+
+| File | Title | Area |
+|------|-------|------|
+| [2026-02-16-implement-telemetry-helper-utilities.md](.planning/todos/pending/2026-02-16-implement-telemetry-helper-utilities.md) | Implement telemetry helper utilities | telemetry |
+
 ### Key Decisions
 
 | Decision | Rationale | Status |
@@ -238,7 +246,10 @@ When planning Phase 1, refer to:
 ---
 
 **Last Session:**
-- Stopped at: Completed 05-03-PLAN.md (Release preparation & workflow enablement) - 3 tasks, 11s
-- Timestamp: 2026-02-16T05:13:06Z
-- Status: Phase 5 COMPLETE - All 34 v1 requirements satisfied
-- Next action: Ready for v0.1.0 release (trigger Version Packages workflow)
+- Stopped at: Captured telemetry helper utilities todo
+- Timestamp: 2026-02-16T14:23:25Z
+- Status: v0.1.0 and v0.1.1 released to npm - All 34 v1 requirements satisfied
+- Published versions:
+  - v0.1.0 (2026-02-16) - Initial release
+  - v0.1.1 (2026-02-16) - SEC API compatibility fixes
+- Next action: Implement telemetry helper utilities (optional enhancement)

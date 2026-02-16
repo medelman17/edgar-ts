@@ -69,11 +69,20 @@ describe("fetchAllFilings", () => {
         status: 200,
       } as unknown as MockHttpResponse)
 
-      await fetchAllFilings("320193", httpClient)
+      await fetchAllFilings("320193", httpClient, {
+        operation: "discoverFilings",
+        endpointClass: "submissions",
+      })
 
       // Verify normalized CIK used in URL
       expect(httpClient.request).toHaveBeenCalledWith(
         "https://data.sec.gov/submissions/CIK0000320193.json",
+        expect.objectContaining({
+          context: expect.objectContaining({
+            operation: "discoverFilings",
+            endpointClass: "submissions",
+          }),
+        })
       )
     })
 
@@ -86,10 +95,19 @@ describe("fetchAllFilings", () => {
         status: 200,
       } as unknown as MockHttpResponse)
 
-      await fetchAllFilings("0000320193", httpClient)
+      await fetchAllFilings("0000320193", httpClient, {
+        operation: "discoverFilings",
+        endpointClass: "submissions",
+      })
 
       expect(httpClient.request).toHaveBeenCalledWith(
         "https://data.sec.gov/submissions/CIK0000320193.json",
+        expect.objectContaining({
+          context: expect.objectContaining({
+            operation: "discoverFilings",
+            endpointClass: "submissions",
+          }),
+        })
       )
     })
 
@@ -223,7 +241,10 @@ describe("fetchAllFilings", () => {
           status: 200,
         } as unknown as MockHttpResponse)
 
-      const result = await fetchAllFilings("0000320193", httpClient)
+      const result = await fetchAllFilings("0000320193", httpClient, {
+        operation: "discoverFilings",
+        endpointClass: "submissions",
+      })
 
       // Verify total count: 1000 (recent) + 500 (file1) + 500 (file2) = 2000
       expect(result).toHaveLength(2000)
@@ -231,20 +252,38 @@ describe("fetchAllFilings", () => {
       // Verify primary request
       expect(httpClient.request).toHaveBeenCalledWith(
         "https://data.sec.gov/submissions/CIK0000320193.json",
+        expect.objectContaining({
+          context: expect.objectContaining({
+            operation: "discoverFilings",
+            endpointClass: "submissions",
+          }),
+        })
       )
 
       // Verify paginated file requests use data.sec.gov base
       expect(httpClient.request).toHaveBeenCalledWith(
         "https://data.sec.gov/submissions/CIK0000320193-submissions-001.json",
+        expect.objectContaining({
+          context: expect.objectContaining({
+            operation: "discoverFilings",
+            endpointClass: "submissions",
+          }),
+        })
       )
       expect(httpClient.request).toHaveBeenCalledWith(
         "https://data.sec.gov/submissions/CIK0000320193-submissions-002.json",
+        expect.objectContaining({
+          context: expect.objectContaining({
+            operation: "discoverFilings",
+            endpointClass: "submissions",
+          }),
+        })
       )
 
       // Verify filings from different sources are included
-      expect(result.filter((f) => f.filingDate === "2024-01-01")).toHaveLength(1000) // recent
-      expect(result.filter((f) => f.filingDate === "2023-01-01")).toHaveLength(500) // file 1
-      expect(result.filter((f) => f.filingDate === "2022-01-01")).toHaveLength(500) // file 2
+      expect(result.filter((f: FilingRecord) => f.filingDate === "2024-01-01")).toHaveLength(1000) // recent
+      expect(result.filter((f: FilingRecord) => f.filingDate === "2023-01-01")).toHaveLength(500) // file 1
+      expect(result.filter((f: FilingRecord) => f.filingDate === "2022-01-01")).toHaveLength(500) // file 2
     })
 
     it("handles single paginated file", async () => {

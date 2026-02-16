@@ -29,7 +29,9 @@ export class DownloadService {
   async downloadExhibit(exhibit: ExhibitRef): Promise<DownloadedExhibit> {
     // 1. Fetch exhibit URL via SecHttpClient
     // Cast to unknown then assume arrayBuffer() method and headers
-    const response = (await this.httpClient.request(exhibit.exhibitUrl)) as unknown as {
+    const response = (await this.httpClient.request(exhibit.exhibitUrl, {
+      context: { operation: "downloadExhibit", endpointClass: "archive" },
+    })) as unknown as {
       arrayBuffer(): Promise<ArrayBuffer>
       headers: { get(name: string): string | null }
     }
