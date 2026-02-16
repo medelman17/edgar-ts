@@ -62,6 +62,85 @@ for (const filing of filings) {
 | `listContractExhibits(filing)` | `Promise<ExhibitRef[]>` | Contract exhibits only (EX-10*) |
 | `downloadExhibit(exhibit)` | `Promise<DownloadedExhibit>` | Raw bytes + metadata + SHA-256 |
 
+### Examples
+
+#### `discoverFilings(input)`
+
+```typescript
+// Basic date range query
+const filings = await client.discoverFilings({
+  from: "2026-01-01",
+  to: "2026-01-31",
+})
+
+// Filter by CIK
+const appleFilings = await client.discoverFilings({
+  from: "2026-01-01",
+  to: "2026-01-31",
+  cik: "320193",
+})
+
+// Custom form types
+const customFilings = await client.discoverFilings({
+  from: "2026-01-01",
+  to: "2026-01-31",
+  formTypes: ["8-K"],
+})
+```
+
+#### `listExhibits(filing)`
+
+```typescript
+const filing = filings[0]
+const exhibits = await client.listExhibits(filing)
+// Returns all exhibits with: sequence, type, description, filename, url
+```
+
+#### `listContractExhibits(filing)`
+
+```typescript
+const contractExhibits = await client.listContractExhibits(filing)
+// Returns only EX-10* exhibits (contracts)
+```
+
+#### `downloadExhibit(exhibit)`
+
+```typescript
+const exhibit = contractExhibits[0]
+const downloaded = await client.downloadExhibit(exhibit)
+console.log(`Downloaded ${downloaded.sizeBytes} bytes`)
+console.log(`SHA-256: ${downloaded.sha256}`)
+console.log(`MIME type: ${downloaded.mimeType || "unknown"}`)
+// downloaded.bytes is Uint8Array of raw exhibit content
+```
+
+### Type Exports
+
+```typescript
+import type {
+  EdgarClientOptions,
+  FilingRef,
+  ExhibitRef,
+  DownloadedExhibit,
+} from "edgar-ts"
+```
+
+### Error Handling
+
+```typescript
+import { EdgarError, ValidationError, TimeoutError } from "edgar-ts"
+
+try {
+  await client.discoverFilings(input)
+} catch (err) {
+  if (err instanceof ValidationError) {
+    // Invalid input parameters
+  } else if (err instanceof TimeoutError) {
+    // Request exceeded timeout
+  }
+}
+```
+
 ## Development
 
 ```bash
