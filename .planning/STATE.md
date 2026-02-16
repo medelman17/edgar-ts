@@ -2,7 +2,7 @@
 
 **Project:** edgar-ts — TypeScript library for SEC EDGAR filing discovery and contract exhibit acquisition
 
-**Last Updated:** 2026-02-16 (Phase 2 Plan 01 complete)
+**Last Updated:** 2026-02-16 (Phase 2 Plan 02 complete)
 
 ---
 
@@ -24,7 +24,7 @@
 
 **Current Phase:** 02
 
-**Current Plan:** 02 (not started)
+**Current Plan:** Not started
 
 **Phase 1 Progress (Complete):**
 - Plan 01 (Rate limiting & timeout foundations) ✓ Complete
@@ -33,7 +33,7 @@
 
 **Phase 2 Progress:**
 - Plan 01 (Normalization & deduplication foundations) ✓ Complete
-- Plan 02 (DiscoveryService implementation) - Not started
+- Plan 02 (SEC Submissions API pagination) ✓ Complete
 
 **Phase 1 Completed:**
 - TokenBucket rate limiter with 1-10 req/s bounds
@@ -49,7 +49,9 @@
 - normalizeFormType: uppercase with slash preservation
 - validateDate: YYYY-MM-DD validation with rollover detection
 - dedupeAndSort: identity-based dedup with stable sort
-- 46 new tests (35 normalization + 11 deduplication)
+- fetchAllFilings: recursive pagination through SEC filings.files array
+- SubmissionsResponse and FilingRecord types for SEC API structure
+- 63 new tests (35 normalization + 11 deduplication + 17 pagination)
 
 ---
 
@@ -71,6 +73,7 @@
 | 01-http-transport-rate-limiting | 02 | 185s | 2 | 4 | ✓ Complete |
 | 01-http-transport-rate-limiting | 03 | 444s | 2 | 3 | ✓ Complete |
 | 02-filing-discovery-normalization | 01 | 237s | 2 | 5 | ✓ Complete |
+| 02-filing-discovery-normalization | 02 | 413s | 1 | 5 | ✓ Complete |
 
 ---
 
@@ -93,6 +96,9 @@
 | Date rollover detection for validateDate | JavaScript Date constructor is lenient; compare ISO output to detect invalid dates | ✓ Applied (Phase 2 Plan 01) |
 | Deduplication assumes normalized inputs | dedupeAndSort does NOT normalize internally; prevents double-normalization | ✓ Applied (Phase 2 Plan 01) |
 | Stable sort via localeCompare | ISO 8601 dates are lexicographically sortable; no Date parsing in comparator | ✓ Applied (Phase 2 Plan 01) |
+| Paginated files use www.sec.gov base URL | Research findings indicate paginated files differ from primary endpoint base | ✓ Applied (Phase 2 Plan 02) |
+| Parse both direct and parallel array formats | SEC paginated responses may vary in structure; support both for flexibility | ✓ Applied (Phase 2 Plan 02) |
+| Unknown intermediate casting for type narrowing | SecHttpClient response lacks json() method; cast to unknown then narrow to avoid any | ✓ Applied (Phase 2 Plan 02) |
 
 ### Architecture Highlights
 
@@ -145,6 +151,6 @@ When planning Phase 1, refer to:
 ---
 
 **Last Session:**
-- Stopped at: Completed Phase 2 Plan 01 (Normalization & Deduplication) - 2 tasks, 46 tests, 237s
-- Timestamp: 2026-02-16T03:26:27Z
-- Next action: Continue Phase 2 with Plan 02 (DiscoveryService implementation)
+- Stopped at: Completed Phase 2 Plan 02 (SEC Submissions API Pagination) - 1 task, 17 tests, 413s
+- Timestamp: 2026-02-16T03:29:24Z
+- Next action: Continue Phase 2 with Plan 03 or verify phase completion
