@@ -146,8 +146,12 @@ export function createMetricsAggregator(): TelemetryOptions & {
     requestsFailed = 0
     retriesTotal = 0
     rateLimitedRequests = 0
-    Object.keys(requestsFailedByError).forEach(key => delete requestsFailedByError[key])
-    Object.keys(latencyByOperation).forEach(key => delete latencyByOperation[key])
+    Object.keys(requestsFailedByError).forEach(key => {
+      delete requestsFailedByError[key]
+    })
+    Object.keys(latencyByOperation).forEach(key => {
+      delete latencyByOperation[key]
+    })
   }
 
   return {

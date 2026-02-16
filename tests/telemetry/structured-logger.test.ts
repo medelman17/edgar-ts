@@ -110,7 +110,7 @@ describe("createStructuredLogger", () => {
   })
 
   it("can use custom formatter", () => {
-    const formatter = (event: any) => `CUSTOM:${event.operation}`
+    const formatter = (event: unknown) => `CUSTOM:${(event as { operation: string }).operation}`
     const logger = createStructuredLogger({ formatter })
     const event: RequestStartEvent = {
       url: "https://example.com",
@@ -132,7 +132,7 @@ describe("createStructuredLogger", () => {
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
     const logger = createStructuredLogger()
 
-    const circular: any = { a: 1 }
+    const circular: { a: number; self?: unknown } = { a: 1 }
     circular.self = circular
 
     // @ts-expect-error - testing error handling

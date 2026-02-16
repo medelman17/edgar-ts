@@ -114,7 +114,7 @@ describe("Telemetry integration", () => {
 
     expect(snapshot.requestsTotal).toBeGreaterThan(0)
     expect(snapshot.requestsSuccessful).toBeGreaterThan(0)
-    expect(snapshot.latencyByOperation["discoverFilings"]).toBeDefined()
+    expect(snapshot.latencyByOperation.discoverFilings).toBeDefined()
   })
 
   it("multiple helpers can be combined", async () => {
@@ -124,15 +124,15 @@ describe("Telemetry integration", () => {
     )
 
     const combined = {
-      onRequestStart: (event: any) => {
+      onRequestStart: (event: RequestStartEvent) => {
         metrics.onRequestStart?.(event)
         createStructuredLogger().onRequestStart?.(event)
       },
-      onRequestEnd: (event: any) => {
+      onRequestEnd: (event: RequestEndEvent) => {
         metrics.onRequestEnd?.(event)
         createStructuredLogger().onRequestEnd?.(event)
       },
-      onRetry: (event: any) => {
+      onRetry: (event: RetryEvent) => {
         metrics.onRetry?.(event)
         createStructuredLogger().onRetry?.(event)
       },

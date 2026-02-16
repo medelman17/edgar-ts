@@ -1,4 +1,4 @@
-declare const process: { stderr: any }
+declare const process: { stderr: WriteStream }
 declare const console: { error: (message: string, extra?: string) => void }
 
 import type { TelemetryOptions, RequestStartEvent, RequestEndEvent, RetryEvent } from "@/types"
@@ -67,7 +67,7 @@ export function createConsoleLogger(options: ConsoleLoggerOptions = {}): Telemet
   }
 
   const write = (message: string) => {
-    errorStream.write(message + "\n")
+    errorStream.write(`${message}\n`)
   }
 
   const formatTimestamp = () => {

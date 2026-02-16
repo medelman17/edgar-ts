@@ -148,7 +148,7 @@ describe("createMetricsAggregator", () => {
     })
 
     const snapshot = metrics.getSnapshot()
-    const latency = snapshot.latencyByOperation["discoverFilings"]
+    const latency = snapshot.latencyByOperation.discoverFilings
 
     expect(latency.count).toBe(2)
     expect(latency.min).toBe(100)
@@ -214,7 +214,7 @@ describe("createMetricsAggregator", () => {
 
     const snapshot = metrics.getSnapshot()
 
-    expect(snapshot.latencyByOperation["unknown"]).toBeDefined()
+    expect(snapshot.latencyByOperation.unknown).toBeDefined()
   })
 
   it("handles invalid numeric values gracefully", () => {

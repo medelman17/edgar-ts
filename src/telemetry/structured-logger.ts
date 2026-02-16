@@ -1,4 +1,4 @@
-declare const process: { stdout: any }
+declare const process: { stdout: WritableStream }
 declare const console: { error: (message: string, extra?: string) => void }
 
 import type { TelemetryOptions, RequestStartEvent, RequestEndEvent, RetryEvent } from "@/types"
@@ -50,7 +50,7 @@ export function createStructuredLogger(options: StructuredLoggerOptions = {}): T
     try {
       const payload = { event: eventType, ...event }
       const output = formatter(payload)
-      stream.write(output + "\n")
+      stream.write(`${output}\n`)
     } catch (err) {
       console.error(
         "[edgar-ts/telemetry:structured-logger] Error serializing event:",
