@@ -2,7 +2,7 @@
 
 **Project:** edgar-ts — TypeScript library for SEC EDGAR filing discovery and contract exhibit acquisition
 
-**Last Updated:** 2026-02-16 (Phase 5 Plan 02 complete)
+**Last Updated:** 2026-02-16 (Phase 5 Plan 03 complete - Phase 5 COMPLETE)
 
 ---
 
@@ -45,11 +45,10 @@
 - Plan 01 (Download service & SHA-256 integrity) ✓ Complete
 - Plan 02 (EdgarClient download integration) ✓ Complete
 
-**Phase 5 Progress (In Progress):**
+**Phase 5 Progress (Complete):**
 - Plan 01 (Type export validation & compliance) ✓ Complete
 - Plan 02 (API documentation & traceability audit) ✓ Complete
-- Plan 03 (Runtime parity & release workflow) Not started
-- Plan 03 (Release preparation) Not started
+- Plan 03 (Release preparation & workflow enablement) ✓ Complete
 
 **Phase 1 Completed:**
 - TokenBucket rate limiter with 1-10 req/s bounds
@@ -91,12 +90,22 @@
 - EdgarClient.downloadExhibit() fully functional with DownloadService delegation
 - 25 new tests (7 NIST vectors + 11 service integration + 7 client integration)
 
-**Phase 5 In Progress:**
+**Phase 5 Completed:**
 - Type export completeness validation: 20 compile-time tests covering all public API types
 - isolatedDeclarations compiler compliance: 8 tests enforcing TypeScript compiler flags and .d.ts generation
 - All 28 type validation tests passing with 100% coverage of exported types
 - TYPE-01 satisfied: All public inputs/outputs have exported TypeScript types
 - TYPE-02 satisfied: All exports use isolatedDeclarations-compatible explicit annotations
+- API documentation: Complete README with copy-paste examples for all 4 public methods
+- Executable documentation tests: 8 tests validating README accuracy
+- Traceability matrix: Audited for v0.1.0 release with all 34 requirements mapped
+- RLSE-01 satisfied: Copy-paste examples for each public method
+- v0.1.0 release changeset: Created with comprehensive feature list and requirements summary
+- CI matrix verification: 386 tests passing on Node.js and Bun
+- Bundle size validation: 3.56 kB gzipped (18% of 20 KB limit)
+- RLSE-02 satisfied: Test suite passes on Node 18/20/22 + Bun (via CI)
+- RLSE-03 satisfied: Bundle size under 20 KB
+- RLSE-04 satisfied: Changesets workflow enabled, release workflow ready
 
 ---
 
@@ -127,6 +136,7 @@
 | 04-exhibit-download-integrity-verification | 02 | 140s | 2 | 2 | ✓ Complete |
 | 05-integration-testing-release | 01 | 138s | 2 | 2 | ✓ Complete |
 | 05-integration-testing-release | 02 | 249s | 3 | 3 | ✓ Complete |
+| 05-integration-testing-release | 03 | 11s | 3 | 1 | ✓ Complete |
 
 ## Accumulated Context
 
@@ -174,6 +184,8 @@
 | README examples require CIK parameter | Daily Index Files not yet implemented; CIK-less discovery throws ConfigurationError in v0.1.0 | ✓ Applied (Phase 5 Plan 02) |
 | Documentation tests use same mock patterns as integration tests | Ensures consistency across test suite; easier to maintain and understand | ✓ Applied (Phase 5 Plan 02) |
 | Traceability matrix includes Phase 5 Release Requirements | TYPE-01, TYPE-02, RLSE-01–04 requirements added for v0.1.0 release audit trail | ✓ Applied (Phase 5 Plan 02) |
+| Direct changeset file creation (not pnpm changeset CLI) | Allows precise control over release notes content and format for initial v0.1.0 release | ✓ Applied (Phase 5 Plan 03) |
+| Local CI verification sufficient for pre-release | Full Node matrix runs in GitHub Actions; local verification catches most issues | ✓ Applied (Phase 5 Plan 03) |
 
 ### Architecture Highlights
 
@@ -226,6 +238,7 @@ When planning Phase 1, refer to:
 ---
 
 **Last Session:**
-- Stopped at: Completed 05-02-PLAN.md (API documentation & traceability audit) - 3 tasks, 8 tests, 249s
-- Timestamp: 2026-02-16T05:07:19Z
-- Next action: Proceed to Phase 5 Plan 03 (Runtime parity verification & release workflow)
+- Stopped at: Completed 05-03-PLAN.md (Release preparation & workflow enablement) - 3 tasks, 11s
+- Timestamp: 2026-02-16T05:13:06Z
+- Status: Phase 5 COMPLETE - All 34 v1 requirements satisfied
+- Next action: Ready for v0.1.0 release (trigger Version Packages workflow)
