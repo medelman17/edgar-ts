@@ -66,7 +66,12 @@
 7. Source provenance URLs preserved in FilingRef; consumers can access original EDGAR URLs
 8. Large filing lists (1000+ filings per CIK) are paginated transparently; user sees complete result without truncation
 
-**Plans:** TBD
+**Plans:** 3 plans in 2 waves
+
+Plans:
+- [ ] 02-01-PLAN.md — Normalization & deduplication foundations (Wave 1)
+- [ ] 02-02-PLAN.md — Submissions API pagination (Wave 1)
+- [ ] 02-03-PLAN.md — DiscoveryService orchestration & EdgarClient integration (Wave 2)
 
 ---
 
@@ -135,7 +140,7 @@
 | Phase | Name | Plans Complete | Status | Completed |
 |-------|------|----------------|--------|-----------|
 | 1 | HTTP Transport & Rate Limiting | 3/3 | Planned | — |
-| 2 | Filing Discovery & Normalization | 0/3 | Not started | — |
+| 2 | Filing Discovery & Normalization | 0/3 | Planned | — |
 | 3 | Exhibit Enumeration & Contract Filtering | 0/3 | Not started | — |
 | 4 | Exhibit Download & Integrity Verification | 0/2 | Not started | — |
 | 5 | Integration, Testing & Release | 0/2 | Not started | — |
