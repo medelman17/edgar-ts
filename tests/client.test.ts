@@ -616,4 +616,230 @@ describe("EdgarClient", () => {
       expect(contracts[2]?.type).toBe("EX-10A")
     })
   })
+
+  describe("downloadExhibit", () => {
+    it("returns complete DownloadedExhibit with all fields", async () => {
+      const mockBinaryData = new TextEncoder().encode("Test exhibit content")
+
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (name: string) => (name === "Content-Type" ? "text/html; charset=utf-8" : null),
+        },
+        arrayBuffer: async () => mockBinaryData.buffer,
+      })
+
+      const client = new EdgarClient({
+        userAgent: "TestBot/1.0 (test@example.com)",
+      })
+
+      const exhibitRef = {
+        accessionNo: "0001193125-20-123456",
+        sequence: "1",
+        type: "EX-10.1",
+        description: "Employment Agreement",
+        filename: "ex10-1.htm",
+        exhibitUrl: "https://www.sec.gov/Archives/edgar/data/0000320193/000119312520123456/ex10-1.htm",
+      }
+
+      const result = await client.downloadExhibit(exhibitRef)
+
+      expect(result.exhibit).toBe(exhibitRef)
+      expect(result.bytes).toBeInstanceOf(Uint8Array)
+      expect(result.sizeBytes).toBe(20)
+      expect(result.mimeType).toBe("text/html")
+      expect(result.sha256).toBeTruthy()
+      expect(result.sha256).toHaveLength(64)
+      expect(result.sha256).toMatch(/^[a-f0-9]{64}$/)
+    })
+
+    it("extracts MIME type from Content-Type header", async () => {
+      const mockBinaryData = new TextEncoder().encode("Test")
+
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (name: string) => (name === "Content-Type" ? "application/pdf" : null),
+        },
+        arrayBuffer: async () => mockBinaryData.buffer,
+      })
+
+      const client = new EdgarClient({
+        userAgent: "TestBot/1.0 (test@example.com)",
+      })
+
+      const exhibitRef = {
+        accessionNo: "0001193125-20-123456",
+        sequence: "1",
+        type: "EX-10.1",
+        description: "Employment Agreement",
+        filename: "ex10-1.pdf",
+        exhibitUrl: "https://www.sec.gov/Archives/edgar/data/0000320193/000119312520123456/ex10-1.pdf",
+      }
+
+      const result = await client.downloadExhibit(exhibitRef)
+
+      expect(result.mimeType).toBe("application/pdf")
+    })
+
+    it("strips charset from Content-Type", async () => {
+      const mockBinaryData = new TextEncoder().encode("Test")
+
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (name: string) => (name === "Content-Type" ? "text/html; charset=utf-8" : null),
+        },
+        arrayBuffer: async () => mockBinaryData.buffer,
+      })
+
+      const client = new EdgarClient({
+        userAgent: "TestBot/1.0 (test@example.com)",
+      })
+
+      const exhibitRef = {
+        accessionNo: "0001193125-20-123456",
+        sequence: "1",
+        type: "EX-10.1",
+        description: "Employment Agreement",
+        filename: "ex10-1.htm",
+        exhibitUrl: "https://www.sec.gov/Archives/edgar/data/0000320193/000119312520123456/ex10-1.htm",
+      }
+
+      const result = await client.downloadExhibit(exhibitRef)
+
+      expect(result.mimeType).toBe("text/html")
+    })
+
+    it("handles missing Content-Type header", async () => {
+      const mockBinaryData = new TextEncoder().encode("Test")
+
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (_name: string) => null,
+        },
+        arrayBuffer: async () => mockBinaryData.buffer,
+      })
+
+      const client = new EdgarClient({
+        userAgent: "TestBot/1.0 (test@example.com)",
+      })
+
+      const exhibitRef = {
+        accessionNo: "0001193125-20-123456",
+        sequence: "1",
+        type: "EX-10.1",
+        description: "Employment Agreement",
+        filename: "ex10-1.htm",
+        exhibitUrl: "https://www.sec.gov/Archives/edgar/data/0000320193/000119312520123456/ex10-1.htm",
+      }
+
+      const result = await client.downloadExhibit(exhibitRef)
+
+      expect(result.mimeType).toBeUndefined()
+    })
+
+    it("computes correct SHA-256 digest", async () => {
+      // Use "abc" as test vector (known SHA-256 from NIST test vectors)
+      const mockBinaryData = new TextEncoder().encode("abc")
+
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (_name: string) => null,
+        },
+        arrayBuffer: async () => mockBinaryData.buffer,
+      })
+
+      const client = new EdgarClient({
+        userAgent: "TestBot/1.0 (test@example.com)",
+      })
+
+      const exhibitRef = {
+        accessionNo: "0001193125-20-123456",
+        sequence: "1",
+        type: "EX-10.1",
+        description: "Employment Agreement",
+        filename: "ex10-1.htm",
+        exhibitUrl: "https://www.sec.gov/Archives/edgar/data/0000320193/000119312520123456/ex10-1.htm",
+      }
+
+      const result = await client.downloadExhibit(exhibitRef)
+
+      // NIST test vector for "abc"
+      expect(result.sha256).toBe("ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad")
+    })
+
+    it("returns correct sizeBytes matching actual bytes length", async () => {
+      const mockBinaryData = new TextEncoder().encode("This is a test exhibit with some content")
+
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (_name: string) => null,
+        },
+        arrayBuffer: async () => mockBinaryData.buffer,
+      })
+
+      const client = new EdgarClient({
+        userAgent: "TestBot/1.0 (test@example.com)",
+      })
+
+      const exhibitRef = {
+        accessionNo: "0001193125-20-123456",
+        sequence: "1",
+        type: "EX-10.1",
+        description: "Employment Agreement",
+        filename: "ex10-1.htm",
+        exhibitUrl: "https://www.sec.gov/Archives/edgar/data/0000320193/000119312520123456/ex10-1.htm",
+      }
+
+      const result = await client.downloadExhibit(exhibitRef)
+
+      expect(result.sizeBytes).toBe(40)
+      expect(result.bytes.length).toBe(40)
+      expect(result.sizeBytes).toBe(result.bytes.length)
+    })
+
+    it("uses exhibit.exhibitUrl for fetching", async () => {
+      const mockBinaryData = new TextEncoder().encode("Test")
+      let fetchedUrl = ""
+
+      mockFetch.mockImplementation(async (url: string | URL | Request) => {
+        fetchedUrl = typeof url === "string" ? url : url.toString()
+        return {
+          ok: true,
+          status: 200,
+          headers: {
+            get: (_name: string) => null,
+          },
+          arrayBuffer: async () => mockBinaryData.buffer,
+        }
+      })
+
+      const client = new EdgarClient({
+        userAgent: "TestBot/1.0 (test@example.com)",
+      })
+
+      const exhibitRef = {
+        accessionNo: "0001193125-20-123456",
+        sequence: "1",
+        type: "EX-10.1",
+        description: "Employment Agreement",
+        filename: "ex10-1.htm",
+        exhibitUrl: "https://www.sec.gov/Archives/edgar/data/0000320193/000119312520123456/ex10-1.htm",
+      }
+
+      await client.downloadExhibit(exhibitRef)
+
+      expect(fetchedUrl).toBe(exhibitRef.exhibitUrl)
+    })
+  })
 })
