@@ -1,7 +1,7 @@
 # edgar-ts Traceability Matrix
 
-**Date:** 2026-02-15  
-**Status:** Complete for documentation sprint
+**Date:** 2026-02-16
+**Status:** Audited for v0.1.0 release
 
 ## Mapping Rules
 1. Every requirement (`FR-*`, `NFR-*`) maps to at least one test scenario and one implementation task.
@@ -30,7 +30,7 @@
 | FR-016 | preserve provenance URLs | DF-001, LE-001 | W-012, W-016 |
 | FR-017 | explicit defaults | constructor/default tests | W-005 |
 | FR-018 | no persistence side effects | integration behavior assertions | W-015, W-017, W-022 |
-| FR-019 | exported TS types | type compile tests | W-004 |
+| FR-019 | exported TS types | type compile tests, TYPE-01 | W-004, tests/types/exports.test.ts |
 | FR-020 | metadata for idempotent storage | DE-001, LE-001 | W-016, W-022 |
 
 ## Non-Functional Requirement Mapping
@@ -42,11 +42,22 @@
 | NFR-003 | deterministic outputs | DF-005, LE-001 | W-013, W-016 |
 | NFR-004 | machine-readable errors | XR-002, XR-003 | W-006, W-010 |
 | NFR-005 | structured observability | telemetry event tests | W-023 |
-| NFR-006 | decision-complete docs | docs review checklist | W-027, W-028 |
+| NFR-006 | decision-complete docs | docs review checklist, RLSE-01 | W-027, W-028, tests/docs/examples.test.ts, README.md |
 | NFR-007 | low dependency footprint | dependency policy checks | W-001, W-028 |
 | NFR-008 | semver + changelog governance | release checklist tests | W-028 |
 | NFR-009 | explicit release test thresholds | CI gate checks | W-002, W-026 |
 | NFR-010 | no privileged/secrets requirement | config validation tests | W-005, W-010 |
+
+## Phase 5 Release Requirement Mapping
+
+| Requirement | Requirement Summary | Test Scenario IDs | Task IDs |
+|---|---|---|---|
+| TYPE-01 | Library exports TypeScript types | tests/types/exports.test.ts | Phase 05 Plan 01, FR-019 |
+| TYPE-02 | isolatedDeclarations compliance | tests/types/isolated-declarations.test.ts, pnpm typecheck | Phase 05 Plan 01, tsconfig.json |
+| RLSE-01 | API documentation examples | tests/docs/examples.test.ts, README.md API section | Phase 05 Plan 02 |
+| RLSE-02 | Node/Bun parity | CI matrix (Node 18/20/22 + Bun), full test suite | .github/workflows/ci.yml, NFR-001 |
+| RLSE-03 | Bundle size under 20 KB | size-limit config, CI build step | package.json size-limit, .github/workflows/ci.yml |
+| RLSE-04 | Changelog + semver | changesets config, release.yml workflow | .changeset/config.json, .github/workflows/release.yml |
 
 ## API-to-Test-to-Task Summary
 
@@ -56,12 +67,22 @@
 | listExhibits | LE-001..LE-003 | W-016, W-017 |
 | listContractExhibits | LC-001..LC-003 | W-018, W-019 |
 | downloadExhibit | DE-001..DE-004 | W-020, W-021, W-022 |
+| Type exports | tests/types/exports.test.ts | Phase 05 Plan 01 (TYPE-01) |
+| isolatedDeclarations | tests/types/isolated-declarations.test.ts | Phase 05 Plan 01 (TYPE-02) |
+| Documentation examples | tests/docs/examples.test.ts | Phase 05 Plan 02 (RLSE-01) |
+| Runtime parity | CI matrix (Node 18/20/22 + Bun) | Phase 05 (RLSE-02) |
+| Bundle size | size-limit checks | Phase 05 (RLSE-03) |
+| Release workflow | Changesets + release.yml | Phase 05 (RLSE-04) |
 
 ## Coverage Audit Checklist
-1. Confirm no requirement row has empty test mappings.
-2. Confirm no requirement row has empty task mappings.
-3. Confirm each task on critical path maps to at least one requirement.
-4. Confirm TDD scenario IDs stay stable when tests are implemented.
+1. ✓ Confirm no requirement row has empty test mappings.
+2. ✓ Confirm no requirement row has empty task mappings.
+3. ✓ Confirm each task on critical path maps to at least one requirement.
+4. ✓ Confirm TDD scenario IDs stay stable when tests are implemented.
+5. ✓ All FR-001 through FR-020 requirements mapped to implementations (Phases 1-4 complete).
+6. ✓ All NFR-001 through NFR-010 requirements satisfied.
+7. ✓ All Phase 5 requirements (TYPE-01, TYPE-02, RLSE-01–04) mapped to tests and artifacts.
+8. ✓ Audited for v0.1.0 release on 2026-02-16.
 
 ## Sign-off Criteria
 1. Matrix reviewed alongside PRD and TDD before coding starts.
