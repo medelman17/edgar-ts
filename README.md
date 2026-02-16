@@ -2,7 +2,23 @@
 
 TypeScript SEC EDGAR client for filing discovery and contract exhibit acquisition.
 
-> **Status**: Under development — not yet published to npm.
+[![npm version](https://badge.fury.io/js/edgar-ts.svg)](https://www.npmjs.com/package/edgar-ts)
+[![CI](https://github.com/medelman17/edgar-ts/actions/workflows/ci.yml/badge.svg)](https://github.com/medelman17/edgar-ts/actions/workflows/ci.yml)
+
+## Installation
+
+```bash
+npm install edgar-ts
+# or
+pnpm add edgar-ts
+# or
+yarn add edgar-ts
+```
+
+## Requirements
+
+- **Node.js 20.0.0+** or **Bun 1.0+**
+- Zero runtime dependencies
 
 ## Features
 
