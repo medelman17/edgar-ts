@@ -140,7 +140,12 @@ Plans:
 5. Bundle size remains under 20 KB gzip limit; size-limit CI check passes
 6. Release includes changelog entry via changesets and semver version tag; traceability matrix maps requirements to implementation
 
-**Plans:** TBD
+**Plans:** 3 plans in 2 waves
+
+Plans:
+- [ ] 05-01-PLAN.md — Type export validation & isolatedDeclarations compliance (Wave 1)
+- [ ] 05-02-PLAN.md — Documentation completeness & traceability audit (Wave 1)
+- [ ] 05-03-PLAN.md — Release preparation & workflow enablement (Wave 2)
 
 ---
 
@@ -150,9 +155,9 @@ Plans:
 |-------|------|----------------|--------|-----------|
 | 1 | HTTP Transport & Rate Limiting | 3/3 | Planned | — |
 | 2 | Filing Discovery & Normalization | 3/3 | Planned | — |
-| 3 | Exhibit Enumeration & Contract Filtering | 0/3 | Planned | — |
-| 4 | Exhibit Download & Integrity Verification | 0/2 | Not started | — |
-| 5 | Integration, Testing & Release | 0/2 | Not started | — |
+| 3 | Exhibit Enumeration & Contract Filtering | 3/3 | Planned | — |
+| 4 | Exhibit Download & Integrity Verification | 2/2 | Planned | — |
+| 5 | Integration, Testing & Release | 0/3 | Planned | — |
 
 ---
 
