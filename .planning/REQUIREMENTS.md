@@ -103,46 +103,47 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| HTTP-01 | — | Pending |
-| HTTP-02 | — | Pending |
-| HTTP-03 | — | Pending |
-| HTTP-04 | — | Pending |
-| HTTP-05 | — | Pending |
-| HTTP-06 | — | Pending |
-| HTTP-07 | — | Pending |
-| DISC-01 | — | Pending |
-| DISC-02 | — | Pending |
-| DISC-03 | — | Pending |
-| DISC-04 | — | Pending |
-| DISC-05 | — | Pending |
-| DISC-06 | — | Pending |
-| DISC-07 | — | Pending |
-| DISC-08 | — | Pending |
-| EXHB-01 | — | Pending |
-| EXHB-02 | — | Pending |
-| EXHB-03 | — | Pending |
-| EXHB-04 | — | Pending |
-| EXHB-05 | — | Pending |
-| CNTR-01 | — | Pending |
-| CNTR-02 | — | Pending |
-| DNLD-01 | — | Pending |
-| DNLD-02 | — | Pending |
-| DNLD-03 | — | Pending |
-| DNLD-04 | — | Pending |
-| OBSV-01 | — | Pending |
-| OBSV-02 | — | Pending |
-| TYPE-01 | — | Pending |
-| TYPE-02 | — | Pending |
-| RLSE-01 | — | Pending |
-| RLSE-02 | — | Pending |
-| RLSE-03 | — | Pending |
-| RLSE-04 | — | Pending |
+| HTTP-01 | 1 | Pending |
+| HTTP-02 | 1 | Pending |
+| HTTP-03 | 1 | Pending |
+| HTTP-04 | 1 | Pending |
+| HTTP-05 | 1 | Pending |
+| HTTP-06 | 1 | Pending |
+| HTTP-07 | 1 | Pending |
+| DISC-01 | 2 | Pending |
+| DISC-02 | 2 | Pending |
+| DISC-03 | 2 | Pending |
+| DISC-04 | 2 | Pending |
+| DISC-05 | 2 | Pending |
+| DISC-06 | 2 | Pending |
+| DISC-07 | 2 | Pending |
+| DISC-08 | 2 | Pending |
+| EXHB-01 | 3 | Pending |
+| EXHB-02 | 3 | Pending |
+| EXHB-03 | 3 | Pending |
+| EXHB-04 | 3 | Pending |
+| EXHB-05 | 3 | Pending |
+| CNTR-01 | 3 | Pending |
+| CNTR-02 | 3 | Pending |
+| DNLD-01 | 4 | Pending |
+| DNLD-02 | 4 | Pending |
+| DNLD-03 | 4 | Pending |
+| DNLD-04 | 4 | Pending |
+| OBSV-01 | 1 | Pending |
+| OBSV-02 | 1 | Pending |
+| TYPE-01 | 5 | Pending |
+| TYPE-02 | 5 | Pending |
+| RLSE-01 | 5 | Pending |
+| RLSE-02 | 5 | Pending |
+| RLSE-03 | 5 | Pending |
+| RLSE-04 | 5 | Pending |
 
 **Coverage:**
 - v1 requirements: 34 total
-- Mapped to phases: 0
-- Unmapped: 34 ⚠️
+- Mapped to phases: 34 ✓
+- Unmapped: 0 ✓
 
 ---
+
 *Requirements defined: 2026-02-15*
-*Last updated: 2026-02-15 after initial definition*
+*Roadmap traceability: 2026-02-15*
