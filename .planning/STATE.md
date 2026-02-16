@@ -2,7 +2,7 @@
 
 **Project:** edgar-ts — TypeScript library for SEC EDGAR filing discovery and contract exhibit acquisition
 
-**Last Updated:** 2026-02-16 (Phase 3 Plan 03 complete)
+**Last Updated:** 2026-02-16 (Phase 4 Plan 01 complete)
 
 ---
 
@@ -22,9 +22,9 @@
 
 ## Current Position
 
-**Current Phase:** 03
+**Current Phase:** 04
 
-**Current Plan:** Not started
+**Current Plan:** 02
 
 **Phase 1 Progress (Complete):**
 - Plan 01 (Rate limiting & timeout foundations) ✓ Complete
@@ -40,6 +40,9 @@
 - Plan 01 (Exhibit parsing & normalization) ✓ Complete
 - Plan 02 (Exhibit deduplication & contract filtering) ✓ Complete
 - Plan 03 (ExhibitService integration & client wiring) ✓ Complete
+
+**Phase 4 Progress:**
+- Plan 01 (Download service & SHA-256 integrity) ✓ Complete
 
 **Phase 1 Completed:**
 - TokenBucket rate limiter with 1-10 req/s bounds
@@ -72,6 +75,14 @@
 - EdgarClient.listExhibits() and listContractExhibits() fully functional with delegation to ExhibitService
 - 115 new tests (63 Plan 01 + 47 Plan 02 + 25 Plan 03) covering parsing, normalization, deduplication, filtering, orchestration
 
+**Phase 4 Completed:**
+- computeSha256Hex: NIST FIPS 180-4 verified SHA-256 hashing using crypto.subtle
+- DownloadService: complete download orchestration (fetch → extract MIME → compute SHA-256 → return metadata)
+- Binary response handling via arrayBuffer() with unknown casting pattern
+- Optional MIME type extraction from Content-Type header (strips charset)
+- Always use bytes.length for sizeBytes (not Content-Length header)
+- 18 new tests (7 NIST vectors + format validation + 11 service integration tests)
+
 ---
 
 ## Performance Metrics
@@ -97,6 +108,7 @@
 | 03-exhibit-enumeration-contract-filtering | 01 | 230s | 2 | 5 | ✓ Complete |
 | 03-exhibit-enumeration-contract-filtering | 02 | 152s | 2 | 4 | ✓ Complete |
 | 03-exhibit-enumeration-contract-filtering | 03 | 259s | 2 | 5 | ✓ Complete |
+| 04-exhibit-download-integrity-verification | 01 | 157s | 2 | 5 | ✓ Complete |
 
 ## Accumulated Context
 
@@ -132,6 +144,10 @@
 | Cast SecHttpClient response to unknown then text() | HttpResponse type lacks text() method; matches Phase 2 json() pattern with unknown casting | ✓ Applied (Phase 3 Plan 03) |
 | ExhibitService mirrors DiscoveryService pattern | Service class with httpClient dependency; client delegates to service; consistent orchestration flow | ✓ Applied (Phase 3 Plan 03) |
 | SEC archive URLs use compact accession | Filing index and exhibit URLs require accession without hyphens; matches SEC API conventions | ✓ Applied (Phase 3 Plan 03) |
+| Use crypto.subtle.digest for SHA-256 | Native Web Crypto API available in Node 18+/Bun; zero-dependency requirement; NIST FIPS 180-4 compliant | ✓ Applied (Phase 4 Plan 01) |
+| Unknown casting for arrayBuffer() response method | Mirrors Phase 2 json() and Phase 3 text() patterns; HttpResponse type lacks arrayBuffer() method; avoids explicit any | ✓ Applied (Phase 4 Plan 01) |
+| Use bytes.length for sizeBytes (not Content-Length header) | Content-Length may be absent or incorrect; actual bytes.length is source of truth | ✓ Applied (Phase 4 Plan 01) |
+| Optional MIME type extraction from Content-Type header | Content-Type may be absent; strip charset parameter for canonical MIME type | ✓ Applied (Phase 4 Plan 01) |
 
 ### Architecture Highlights
 
@@ -184,6 +200,6 @@ When planning Phase 1, refer to:
 ---
 
 **Last Session:**
-- Stopped at: Completed Phase 3 Plan 03 (ExhibitService Integration & Client Wiring) - 2 tasks, 25 tests, 259s
-- Timestamp: 2026-02-16T04:18:48Z
-- Next action: Phase 4 (Download service implementation)
+- Stopped at: Completed Phase 4 Plan 01 (Download service & SHA-256 integrity) - 2 tasks, 18 tests, 157s
+- Timestamp: 2026-02-16T04:38:05Z
+- Next action: Continue Phase 4 (Plan 02 if exists, or Phase 5 integration)
