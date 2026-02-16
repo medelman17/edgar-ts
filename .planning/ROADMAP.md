@@ -116,7 +116,11 @@ Plans:
 4. MIME type hint extracted from response headers; optional (may be undefined if not provided by SEC)
 5. DownloadedExhibit metadata complete: includes ExhibitRef, bytes, size, optional MIME type, and SHA-256 digest
 
-**Plans:** TBD
+**Plans:** 2 plans in 2 waves
+
+Plans:
+- [ ] 04-01-PLAN.md — SHA-256 hasher + DownloadService orchestrator (Wave 1)
+- [ ] 04-02-PLAN.md — EdgarClient integration & downloadExhibit wiring (Wave 2)
 
 ---
 
