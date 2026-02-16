@@ -2,7 +2,7 @@
 
 **Project:** edgar-ts — TypeScript library for SEC EDGAR filing discovery and contract exhibit acquisition
 
-**Last Updated:** 2026-02-16 (Phase 2 Plan 03 complete)
+**Last Updated:** 2026-02-15 (Phase 3 Plan 02 complete)
 
 ---
 
@@ -22,19 +22,24 @@
 
 ## Current Position
 
-**Current Phase:** 02
+**Current Phase:** 03
 
-**Current Plan:** Not started
+**Current Plan:** 03 (Not started)
 
 **Phase 1 Progress (Complete):**
 - Plan 01 (Rate limiting & timeout foundations) ✓ Complete
 - Plan 02 (Retry policy & error mapper) ✓ Complete
 - Plan 03 (SecHttpClient integration) ✓ Complete
 
-**Phase 2 Progress:**
+**Phase 2 Progress (Complete):**
 - Plan 01 (Normalization & deduplication foundations) ✓ Complete
 - Plan 02 (SEC Submissions API pagination) ✓ Complete
 - Plan 03 (DiscoveryService integration & client wiring) ✓ Complete
+
+**Phase 3 Progress:**
+- Plan 01 (Exhibit parsing & normalization) ✓ Complete
+- Plan 02 (Deduplication & contract filtering) ✓ Complete
+- Plan 03 (ExhibitService integration) — Not started
 
 **Phase 1 Completed:**
 - TokenBucket rate limiter with 1-10 req/s bounds
@@ -55,6 +60,15 @@
 - DiscoveryService: complete orchestration flow (validate → fetch → filter → normalize → dedupe → sort)
 - EdgarClient.discoverFilings() fully functional with delegation to DiscoveryService
 - 82 new tests (35 normalization + 11 deduplication + 17 pagination + 15 service + 4 client integration)
+
+**Phase 3 Completed (so far):**
+- parseExhibitTableFromHtml: extract RawExhibit[] from filing index HTML tables
+- normalizeSequence: trim whitespace, fallback to "0" for empty
+- normalizeExhibitType: uppercase, hyphenate EX/EXHIBIT separators
+- normalizeDescription: trim whitespace, fallback to empty string
+- dedupeAndSortExhibits: filing-local identity (accessionNo:sequence), numeric sequence sort
+- isContractExhibit: regex pattern matching for all EX-10* variants
+- 68 new tests (21 parsing + 21 normalization + 16 deduplication + 31 contract filter)
 
 ---
 
@@ -78,8 +92,8 @@
 | 02-filing-discovery-normalization | 01 | 237s | 2 | 5 | ✓ Complete |
 | 02-filing-discovery-normalization | 02 | 413s | 1 | 5 | ✓ Complete |
 | 02-filing-discovery-normalization | 03 | 307s | 2 | 5 | ✓ Complete |
-
----
+| 03-exhibit-enumeration-contract-filtering | 01 | TBD | 2 | 6 | ✓ Complete |
+| 03-exhibit-enumeration-contract-filtering | 02 | 152s | 2 | 5 | ✓ Complete |
 
 ## Accumulated Context
 
@@ -106,6 +120,9 @@
 | ConfigurationError for CIK-less discovery | NotImplementedError doesn't exist in taxonomy; ConfigurationError semantically correct for "feature not yet supported" | ✓ Applied (Phase 2 Plan 03) |
 | Default form types include amendments | Amendments are separate submissions with distinct exhibits; users want comprehensive discovery | ✓ Applied (Phase 2 Plan 03) |
 | SEC viewer URL format for filing provenance | Research recommends viewer format with compact accession; provides direct filing access | ✓ Applied (Phase 2 Plan 03) |
+| Filing-local identity for exhibits | Exhibits dedupe by (accessionNo:sequence) not global (cik:accessionNo); prevents false dedup across filings | ✓ Applied (Phase 3 Plan 02) |
+| Numeric sequence sort for exhibits | Parse sequence to Number for comparison; prevents multi-digit lexicographic errors (10 after 2) | ✓ Applied (Phase 3 Plan 02) |
+| Contract filter regex pattern | /^EX-10(\.\d+|[A-Z])?$/ matches all EX-10 variants (base, dotted, lettered); rejects invalid formats | ✓ Applied (Phase 3 Plan 02) |
 
 ### Architecture Highlights
 
@@ -158,6 +175,6 @@ When planning Phase 1, refer to:
 ---
 
 **Last Session:**
-- Stopped at: Completed Phase 2 Plan 03 (DiscoveryService Integration & Client Wiring) - 2 tasks, 19 tests, 307s
-- Timestamp: 2026-02-16T03:38:08Z
-- Next action: Phase 2 complete. Ready for Phase 3 (Exhibit Parsing) or verify phase completion
+- Stopped at: Completed Phase 3 Plan 02 (Deduplication & Contract Filtering) - 2 tasks, 47 tests, 152s
+- Timestamp: 2026-02-15T23:09:47Z
+- Next action: Phase 3 Plan 03 (ExhibitService integration & client wiring)
