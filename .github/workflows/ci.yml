@@ -72,4 +72,4 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
       - run: pnpm size
-      - run: test -f dist/index.mjs && test -f dist/index.cjs && test -f dist/index.d.ts
+      - run: test -f dist/index.mjs && test -f dist/index.cjs && test -f dist/index.d.mts && test -f dist/index.d.cts

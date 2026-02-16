@@ -1,5 +1,7 @@
 # CLAUDE.md
 
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
 ## Overview
 
 **edgar-ts** is a TypeScript library for SEC EDGAR filing discovery and contract exhibit acquisition. It provides a high-level `EdgarClient` with SEC-compliant rate limiting, retry, and deterministic normalization.
@@ -14,9 +16,13 @@ pnpm build            # Build with tsdown (ESM + CJS + DTS)
 pnpm typecheck        # Type check
 pnpm lint             # Lint with Biome
 pnpm format           # Format with Biome
-pnpm size             # Check bundle size
+pnpm check            # Biome lint + format combined
+pnpm size             # Check bundle size (limit: 20 KB)
 pnpm changeset        # Create a changeset for versioning
 ```
+
+Run a single test file: `pnpm vitest run tests/client.test.ts`
+Run tests matching a name: `pnpm vitest run -t "rejects empty"`
 
 ## Architecture
 
@@ -40,14 +46,19 @@ src/
 - Errors are typed with `retryable` flags for orchestrator-friendly handling
 - No persistence, no parsing — library returns raw bytes + metadata
 
+## Implementation Status
+
+The codebase is scaffolded — `EdgarClient` methods are stubs that throw `"Not yet implemented"`. TODOs reference work items from `docs/edgar-ts-work-breakdown.md` (e.g., `W-014`, `W-017`). The `http/`, `discovery/`, `exhibits/`, `download/`, and `telemetry/` modules export empty barrel files awaiting implementation.
+
 ## Code Style
 
-- **Biome**: 100-char lines, double quotes, trailing commas, ASI-safe semicolons
+- **Biome**: 100-char lines, 2-space indent, double quotes, trailing commas, semicolons only as needed (ASI-safe)
 - **`noExplicitAny: error`** — use `unknown` + type narrowing
+- **`noParameterAssign: error`** — never reassign function parameters
 - **`isolatedDeclarations: true`** — all exports need explicit type annotations
-- **Path alias**: `@/*` maps to `src/*`
+- **Path alias**: `@/*` maps to `src/*` (configured in both `tsconfig.json` and `vitest.config.ts`)
 - **Barrel exports**: Every module directory has `index.ts`
-- **Tests mirror src**: `src/foo/bar.ts` → `tests/foo/bar.test.ts`
+- **Tests**: Vitest with globals enabled. Tests live in `tests/` mirroring `src/` structure. Imports use `@/` alias.
 
 ## API Surface (v1)
 
@@ -69,15 +80,17 @@ client.downloadExhibit(exhibit)                       → DownloadedExhibit
 
 ## Planning Docs
 
-Implementation specs in `docs/`:
-- `edgar-ts-prd.md` — Requirements and user stories
-- `edgar-ts-architecture.md` — Module design
+Implementation specs in `docs/`. Start with the **agent playbook** and **work breakdown** for task sequencing, then consult specific docs as needed:
+
+- `edgar-ts-agent-playbook.md` — Implementation phases and ordering
+- `edgar-ts-work-breakdown.md` — Task dependency graph (W-001 through W-0xx)
 - `edgar-ts-api-contract.md` — Locked API types and method contracts
-- `edgar-ts-data-model.md` — Identity and normalization rules
+- `edgar-ts-architecture.md` — Module design
+- `edgar-ts-prd.md` — Requirements and user stories
+- `edgar-ts-data-model.md` — Identity and normalization rules (CIK padding, accession format)
 - `edgar-ts-error-retry.md` — Error taxonomy and retry policy
 - `edgar-ts-tdd.md` — Test strategy
-- `edgar-ts-work-breakdown.md` — Task dependency graph
-- `edgar-ts-agent-playbook.md` — Implementation phases
+- `edgar-ts-sec-compliance.md` — SEC rate limits and user-agent requirements
 
 ## CI & Releases
 
