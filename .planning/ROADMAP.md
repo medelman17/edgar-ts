@@ -92,7 +92,12 @@ Plans:
 6. Contract exhibit type normalization handles dotted (EX-10.1), format variations (EX_10, EX/10, EX-10A); all variants match correctly
 7. Exhibit provenance URLs preserved in ExhibitRef; consumers can access original EDGAR URLs
 
-**Plans:** TBD
+**Plans:** 3 plans in 2 waves
+
+Plans:
+- [ ] 03-01-PLAN.md — HTML parsing & exhibit normalization (Wave 1)
+- [ ] 03-02-PLAN.md — Deduplication, sorting & contract filtering (Wave 1)
+- [ ] 03-03-PLAN.md — ExhibitService orchestration & EdgarClient integration (Wave 2)
 
 ---
 
@@ -140,8 +145,8 @@ Plans:
 | Phase | Name | Plans Complete | Status | Completed |
 |-------|------|----------------|--------|-----------|
 | 1 | HTTP Transport & Rate Limiting | 3/3 | Planned | — |
-| 2 | Filing Discovery & Normalization | 0/3 | Planned | — |
-| 3 | Exhibit Enumeration & Contract Filtering | 0/3 | Not started | — |
+| 2 | Filing Discovery & Normalization | 3/3 | Planned | — |
+| 3 | Exhibit Enumeration & Contract Filtering | 0/3 | Planned | — |
 | 4 | Exhibit Download & Integrity Verification | 0/2 | Not started | — |
 | 5 | Integration, Testing & Release | 0/2 | Not started | — |
 
