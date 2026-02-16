@@ -1,3 +1,5 @@
+declare const console: { error: (message: string, extra?: string) => void }
+
 import type { TelemetryOptions, RequestStartEvent, RequestEndEvent, RetryEvent } from "@/types"
 
 type LatencyStats = {
@@ -81,7 +83,7 @@ export function createMetricsAggregator(): TelemetryOptions & {
       if (Number.isNaN(durationMs) || !Number.isFinite(durationMs)) {
         console.error(
           "[edgar-ts/telemetry:metrics-aggregator] Invalid durationMs:",
-          durationMs
+          String(durationMs)
         )
         return
       }

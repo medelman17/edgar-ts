@@ -1,13 +1,21 @@
+declare const process: { stdout: any }
+declare const console: { error: (message: string, extra?: string) => void }
+
 import type { TelemetryOptions, RequestStartEvent, RequestEndEvent, RetryEvent } from "@/types"
 
 type TelemetryEvent = RequestStartEvent | RequestEndEvent | RetryEvent
+
+type WritableStream = {
+  write: (data: string) => boolean
+  writable: boolean
+}
 
 export type StructuredLoggerOptions = {
   /**
    * Writable stream to output logs to.
    * @default process.stdout
    */
-  stream?: NodeJS.WritableStream
+  stream?: WritableStream
 
   /**
    * Custom formatter for events.

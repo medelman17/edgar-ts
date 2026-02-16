@@ -1,5 +1,27 @@
-import { styleText } from "node:util"
+declare const process: { stderr: any }
+declare const console: { error: (message: string, extra?: string) => void }
+
 import type { TelemetryOptions, RequestStartEvent, RequestEndEvent, RetryEvent } from "@/types"
+
+type WriteStream = {
+  write: (data: string) => boolean
+}
+
+// Simple ANSI color mapping for Node.js terminals
+const ansiColors: Record<string, string> = {
+  cyan: "\x1b[36m",
+  gray: "\x1b[90m",
+  green: "\x1b[32m",
+  red: "\x1b[31m",
+  yellow: "\x1b[33m",
+  reset: "\x1b[0m",
+}
+
+const styleText = (text: string, color: string): string => {
+  const code = ansiColors[color]
+  if (!code) return text
+  return `${code}${text}${ansiColors.reset}`
+}
 
 export type ConsoleLoggerOptions = {
   /**
@@ -18,7 +40,7 @@ export type ConsoleLoggerOptions = {
    * Stream to write output to.
    * @default process.stderr
    */
-  errorStream?: NodeJS.WriteStream
+  errorStream?: WriteStream
 }
 
 /**
@@ -41,7 +63,7 @@ export function createConsoleLogger(options: ConsoleLoggerOptions = {}): Telemet
 
   const colorize = (text: string, color: string) => {
     if (!colors) return text
-    return styleText(color as any, text)
+    return styleText(text, color)
   }
 
   const write = (message: string) => {
@@ -76,7 +98,7 @@ export function createConsoleLogger(options: ConsoleLoggerOptions = {}): Telemet
 
   const onRetry = (event: RetryEvent) => {
     try {
-      const msg = `${formatTimestamp()}${colorize("⟳", "yellow")} Retry ${event.attempt}/${event.maxAttempts} after ${event.delayMs}ms: ${event.method} ${event.url} (${colorize(event.error, "red")})`
+      const msg = `${formatTimestamp()}${colorize("⟳", "yellow")} Retry ${event.attempt}/${event.maxAttempts} after ${event.delayMs}ms: ${event.url} (${colorize(event.error, "red")})`
       write(msg)
     } catch (err) {
       console.error("[edgar-ts/telemetry:console-logger] Error in onRetry:", (err as Error).message)

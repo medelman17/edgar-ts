@@ -68,6 +68,12 @@ describe("DownloadService", () => {
 
       expect(httpClient.request).toHaveBeenCalledWith(
         "https://www.sec.gov/Archives/edgar/data/1234567/test.pdf",
+        expect.objectContaining({
+          context: expect.objectContaining({
+            operation: "downloadExhibit",
+            endpointClass: "archive",
+          }),
+        })
       )
     })
 
