@@ -6,9 +6,14 @@ type SubtleCrypto = {
   digest(algorithm: string, data: Uint8Array | ArrayBuffer): Promise<ArrayBuffer>
 }
 
-// Access crypto.subtle via globalThis for cross-runtime compatibility (Node 18+, Bun).
-// eslint-disable-next-line -- accessing global crypto without @types/node
-const subtle = (globalThis as unknown as { crypto: { subtle: SubtleCrypto } }).crypto.subtle
+/**
+ * Access crypto.subtle lazily for cross-runtime compatibility (Node 18+, Bun).
+ * Vitest doesn't expose globalThis.crypto in all configurations, so we defer
+ * access until actually needed at call time rather than module load time.
+ */
+function getSubtle(): SubtleCrypto {
+  return (globalThis as unknown as { crypto: { subtle: SubtleCrypto } }).crypto.subtle
+}
 
 /**
  * Compute SHA-256 hex digest of binary data.
@@ -30,7 +35,7 @@ const subtle = (globalThis as unknown as { crypto: { subtle: SubtleCrypto } }).c
  */
 export async function computeSha256Hex(data: Uint8Array): Promise<string> {
   // Compute SHA-256 digest using Web Crypto API
-  const hashBuffer = await subtle.digest("SHA-256", data)
+  const hashBuffer = await getSubtle().digest("SHA-256", data)
 
   // Convert ArrayBuffer to lowercase hex string
   const hashArray = Array.from(new Uint8Array(hashBuffer))
