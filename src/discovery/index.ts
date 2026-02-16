@@ -7,6 +7,8 @@ export {
   validateDate,
 } from "./normalization"
 
+export { dedupeAndSort } from "./deduplication"
+
 export { fetchAllFilings } from "./pagination"
 
 export type { SubmissionsResponse, FilingRecord, PaginatedFileRef } from "./types"
