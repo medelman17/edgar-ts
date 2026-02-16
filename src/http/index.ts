@@ -3,3 +3,4 @@
 
 export { TokenBucket } from "./limiter"
 export { combineSignals, fetchWithTimeoutAndAbort } from "./timeout"
+export { calculateBackoffMs } from "./retry"
