@@ -64,17 +64,54 @@ export type SubmissionsResponse = {
   fiscalYearEnd?: string
   /** Filings collection */
   filings: {
-    /** Most recent filings (up to 1000, or fewer) */
-    recent: FilingRecord[]
+    /** Most recent filings as parallel arrays (up to 1000 entries per array) */
+    recent: ParallelFilingArrays
     /** References to paginated filing files (for CIKs with 1000+ filings) */
     files: PaginatedFileRef[]
   }
 }
 
 /**
- * Response from paginated filing file (www.sec.gov/{file.name})
+ * SEC API parallel-array format for filing data.
+ * The SEC Submissions API returns filings as an object with parallel arrays
+ * (one array per field), not as an array of objects.
  */
-export type PaginatedFilingsResponse = {
-  /** Array of filing records from the paginated file */
-  [key: string]: unknown
+export type ParallelFilingArrays = {
+  accessionNumber: string[]
+  filingDate: string[]
+  reportDate: string[]
+  acceptanceDateTime: string[]
+  act: string[]
+  form: string[]
+  fileNumber: string[]
+  primaryDocument: string[]
+  primaryDocDescription: string[]
+  size: number[]
+  isXBRL: number[]
+  isInlineXBRL: number[]
+}
+
+/**
+ * Reconstruct FilingRecord[] from SEC parallel-array format.
+ */
+export function recordsFromParallelArrays(arrays: ParallelFilingArrays): FilingRecord[] {
+  const len = arrays.accessionNumber?.length ?? 0
+  const records: FilingRecord[] = []
+  for (let i = 0; i < len; i++) {
+    records.push({
+      accessionNumber: arrays.accessionNumber[i] ?? "",
+      filingDate: arrays.filingDate[i] ?? "",
+      reportDate: arrays.reportDate[i] ?? "",
+      acceptanceDateTime: arrays.acceptanceDateTime[i] ?? "",
+      act: arrays.act[i] ?? "",
+      form: arrays.form[i] ?? "",
+      fileNumber: arrays.fileNumber[i] ?? "",
+      primaryDocument: arrays.primaryDocument[i] ?? "",
+      primaryDocDescription: arrays.primaryDocDescription[i],
+      size: arrays.size[i] ?? 0,
+      isXBRL: arrays.isXBRL[i] ?? 0,
+      isInlineXBRL: arrays.isInlineXBRL[i] ?? 0,
+    })
+  }
+  return records
 }

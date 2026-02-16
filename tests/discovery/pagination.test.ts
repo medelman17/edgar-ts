@@ -20,33 +20,34 @@ const createMockHttpClient = (): SecHttpClient => {
   } as unknown as SecHttpClient
 }
 
-// Helper to create a mock filing record
-const createMockFiling = (overrides?: Partial<FilingRecord>): FilingRecord => ({
-  accessionNumber: "0001193125-20-123456",
-  filingDate: "2020-05-01",
-  reportDate: "2020-03-31",
-  acceptanceDateTime: "2020-05-01T16:30:00.000Z",
-  act: "34",
-  form: "10-K",
-  fileNumber: "001-00001",
-  primaryDocument: "filing.htm",
-  primaryDocDescription: "10-K - Annual Report",
-  size: 1024,
-  isXBRL: 1,
-  isInlineXBRL: 0,
-  ...overrides,
-})
+// Helper to create mock parallel arrays from filing records
+const createParallelArrays = (filings: Array<Partial<FilingRecord>>) => {
+  return {
+    accessionNumber: filings.map((f) => f.accessionNumber ?? "0001193125-20-123456"),
+    filingDate: filings.map((f) => f.filingDate ?? "2020-05-01"),
+    reportDate: filings.map((f) => f.reportDate ?? "2020-03-31"),
+    acceptanceDateTime: filings.map((f) => f.acceptanceDateTime ?? "2020-05-01T16:30:00.000Z"),
+    act: filings.map((f) => f.act ?? "34"),
+    form: filings.map((f) => f.form ?? "10-K"),
+    fileNumber: filings.map((f) => f.fileNumber ?? "001-00001"),
+    primaryDocument: filings.map((f) => f.primaryDocument ?? "filing.htm"),
+    primaryDocDescription: filings.map((f) => f.primaryDocDescription ?? "10-K - Annual Report"),
+    size: filings.map((f) => f.size ?? 1024),
+    isXBRL: filings.map((f) => f.isXBRL ?? 1),
+    isInlineXBRL: filings.map((f) => f.isInlineXBRL ?? 0),
+  }
+}
 
 // Helper to create a mock submissions response
 const createMockSubmissionsResponse = (
-  recentFilings: FilingRecord[],
+  recentFilings: Array<Partial<FilingRecord>>,
   files: Array<{ name: string; filingCount: number }> = [],
 ): SubmissionsResponse => ({
   cik: "0000320193",
   name: "Apple Inc.",
   tickers: ["AAPL"],
   filings: {
-    recent: recentFilings,
+    recent: createParallelArrays(recentFilings),
     files,
   },
 })
@@ -60,7 +61,7 @@ describe("fetchAllFilings", () => {
 
   describe("CIK normalization", () => {
     it("normalizes unpadded CIK to 10 digits", async () => {
-      const mockResponse = createMockSubmissionsResponse([createMockFiling()])
+      const mockResponse = createMockSubmissionsResponse([{}])
 
       vi.mocked(httpClient.request).mockResolvedValueOnce({
         json: async () => mockResponse,
@@ -77,7 +78,7 @@ describe("fetchAllFilings", () => {
     })
 
     it("normalizes already-padded CIK", async () => {
-      const mockResponse = createMockSubmissionsResponse([createMockFiling()])
+      const mockResponse = createMockSubmissionsResponse([{}])
 
       vi.mocked(httpClient.request).mockResolvedValueOnce({
         json: async () => mockResponse,
@@ -110,9 +111,9 @@ describe("fetchAllFilings", () => {
   describe("small CIK (no pagination)", () => {
     it("returns filings from recent array when files is empty", async () => {
       const filings = [
-        createMockFiling({ accessionNumber: "0001193125-20-111111", form: "10-K" }),
-        createMockFiling({ accessionNumber: "0001193125-20-222222", form: "10-Q" }),
-        createMockFiling({ accessionNumber: "0001193125-20-333333", form: "8-K" }),
+        { accessionNumber: "0001193125-20-111111", form: "10-K" },
+        { accessionNumber: "0001193125-20-222222", form: "10-Q" },
+        { accessionNumber: "0001193125-20-333333", form: "8-K" },
       ]
 
       const mockResponse = createMockSubmissionsResponse(filings, [])
@@ -132,11 +133,9 @@ describe("fetchAllFilings", () => {
     })
 
     it("returns exactly 10 filings for small CIK", async () => {
-      const filings = Array.from({ length: 10 }, (_, i) =>
-        createMockFiling({
-          accessionNumber: `0001193125-20-${String(i).padStart(6, "0")}`,
-        }),
-      )
+      const filings = Array.from({ length: 10 }, (_, i) => ({
+        accessionNumber: `0001193125-20-${String(i).padStart(6, "0")}`,
+      }))
 
       const mockResponse = createMockSubmissionsResponse(filings, [])
 
@@ -155,17 +154,15 @@ describe("fetchAllFilings", () => {
   describe("large CIK (with pagination)", () => {
     it("fetches and combines filings from paginated files", async () => {
       // Recent filings (1000 items)
-      const recentFilings = Array.from({ length: 1000 }, (_, i) =>
-        createMockFiling({
-          accessionNumber: `0001193125-24-${String(i).padStart(6, "0")}`,
-          filingDate: "2024-01-01",
-        }),
-      )
+      const recentFilings = Array.from({ length: 1000 }, (_, i) => ({
+        accessionNumber: `0001193125-24-${String(i).padStart(6, "0")}`,
+        filingDate: "2024-01-01",
+      }))
 
       // Paginated files
       const paginatedFiles = [
-        { name: "submissions/CIK0000320193-submissions-001.json", filingCount: 500 },
-        { name: "submissions/CIK0000320193-submissions-002.json", filingCount: 500 },
+        { name: "CIK0000320193-submissions-001.json", filingCount: 500 },
+        { name: "CIK0000320193-submissions-002.json", filingCount: 500 },
       ]
 
       const mockPrimaryResponse = createMockSubmissionsResponse(recentFilings, paginatedFiles)
@@ -236,12 +233,12 @@ describe("fetchAllFilings", () => {
         "https://data.sec.gov/submissions/CIK0000320193.json",
       )
 
-      // Verify paginated file requests use www.sec.gov base
+      // Verify paginated file requests use data.sec.gov base
       expect(httpClient.request).toHaveBeenCalledWith(
-        "https://www.sec.gov/submissions/CIK0000320193-submissions-001.json",
+        "https://data.sec.gov/submissions/CIK0000320193-submissions-001.json",
       )
       expect(httpClient.request).toHaveBeenCalledWith(
-        "https://www.sec.gov/submissions/CIK0000320193-submissions-002.json",
+        "https://data.sec.gov/submissions/CIK0000320193-submissions-002.json",
       )
 
       // Verify filings from different sources are included
@@ -251,14 +248,12 @@ describe("fetchAllFilings", () => {
     })
 
     it("handles single paginated file", async () => {
-      const recentFilings = Array.from({ length: 1000 }, (_, i) =>
-        createMockFiling({
-          accessionNumber: `0001193125-24-${String(i).padStart(6, "0")}`,
-        }),
-      )
+      const recentFilings = Array.from({ length: 1000 }, (_, i) => ({
+        accessionNumber: `0001193125-24-${String(i).padStart(6, "0")}`,
+      }))
 
       const paginatedFiles = [
-        { name: "submissions/CIK0000320193-submissions-001.json", filingCount: 200 },
+        { name: "CIK0000320193-submissions-001.json", filingCount: 200 },
       ]
 
       const mockPrimaryResponse = createMockSubmissionsResponse(recentFilings, paginatedFiles)
@@ -275,6 +270,7 @@ describe("fetchAllFilings", () => {
         form: Array.from({ length: 200 }, () => "10-Q"),
         fileNumber: Array.from({ length: 200 }, () => "001-00001"),
         primaryDocument: Array.from({ length: 200 }, () => "filing.htm"),
+        primaryDocDescription: Array.from({ length: 200 }, () => ""),
         size: Array.from({ length: 200 }, () => 1024),
         isXBRL: Array.from({ length: 200 }, () => 1),
         isInlineXBRL: Array.from({ length: 200 }, () => 1),
@@ -319,7 +315,20 @@ describe("fetchAllFilings", () => {
         cik: "0000320193",
         name: "Test Company",
         filings: {
-          recent: undefined as unknown,
+          recent: {
+            accessionNumber: [],
+            filingDate: [],
+            reportDate: [],
+            acceptanceDateTime: [],
+            act: [],
+            form: [],
+            fileNumber: [],
+            primaryDocument: [],
+            primaryDocDescription: [],
+            size: [],
+            isXBRL: [],
+            isInlineXBRL: [],
+          },
           files: [],
         },
       }
@@ -336,12 +345,12 @@ describe("fetchAllFilings", () => {
     })
 
     it("handles missing files array gracefully", async () => {
-      const filings = [createMockFiling()]
+      const filings = [{}]
       const mockResponse = {
         cik: "0000320193",
         name: "Test Company",
         filings: {
-          recent: filings,
+          recent: createParallelArrays(filings),
           files: undefined as unknown,
         },
       }
@@ -359,10 +368,10 @@ describe("fetchAllFilings", () => {
   })
 
   describe("pagination URL construction", () => {
-    it("uses www.sec.gov base for paginated files", async () => {
-      const recentFilings = [createMockFiling()]
+    it("uses data.sec.gov base for paginated files", async () => {
+      const recentFilings = [{}]
       const paginatedFiles = [
-        { name: "submissions/CIK0000320193-submissions-001.json", filingCount: 100 },
+        { name: "CIK0000320193-submissions-001.json", filingCount: 100 },
       ]
 
       const mockPrimaryResponse = createMockSubmissionsResponse(recentFilings, paginatedFiles)
@@ -376,6 +385,7 @@ describe("fetchAllFilings", () => {
         form: ["10-K"],
         fileNumber: ["001-00001"],
         primaryDocument: ["filing.htm"],
+        primaryDocDescription: [""],
         size: [1024],
         isXBRL: [1],
         isInlineXBRL: [0],
@@ -395,10 +405,9 @@ describe("fetchAllFilings", () => {
 
       await fetchAllFilings("0000320193", httpClient)
 
-      // Verify paginated URL uses www.sec.gov, NOT data.sec.gov
+      // Verify paginated URL uses data.sec.gov/submissions/ base
       const calls = vi.mocked(httpClient.request).mock.calls
-      expect(calls[1][0]).toBe("https://www.sec.gov/submissions/CIK0000320193-submissions-001.json")
-      expect(calls[1][0]).not.toContain("data.sec.gov")
+      expect(calls[1][0]).toBe("https://data.sec.gov/submissions/CIK0000320193-submissions-001.json")
     })
   })
 
@@ -417,9 +426,9 @@ describe("fetchAllFilings", () => {
     })
 
     it("propagates HTTP errors from paginated file requests", async () => {
-      const recentFilings = [createMockFiling()]
+      const recentFilings = [{}]
       const paginatedFiles = [
-        { name: "submissions/CIK0000320193-submissions-001.json", filingCount: 100 },
+        { name: "CIK0000320193-submissions-001.json", filingCount: 100 },
       ]
 
       const mockPrimaryResponse = createMockSubmissionsResponse(recentFilings, paginatedFiles)
@@ -460,9 +469,9 @@ describe("fetchAllFilings", () => {
     })
 
     it("throws ParseError on invalid JSON from paginated file", async () => {
-      const recentFilings = [createMockFiling()]
+      const recentFilings = [{}]
       const paginatedFiles = [
-        { name: "submissions/CIK0000320193-submissions-001.json", filingCount: 100 },
+        { name: "CIK0000320193-submissions-001.json", filingCount: 100 },
       ]
 
       const mockPrimaryResponse = createMockSubmissionsResponse(recentFilings, paginatedFiles)
@@ -492,9 +501,9 @@ describe("fetchAllFilings", () => {
 
   describe("all requests route through SecHttpClient", () => {
     it("uses httpClient for all HTTP requests", async () => {
-      const recentFilings = [createMockFiling()]
+      const recentFilings = [{}]
       const paginatedFiles = [
-        { name: "submissions/CIK0000320193-submissions-001.json", filingCount: 1 },
+        { name: "CIK0000320193-submissions-001.json", filingCount: 1 },
       ]
 
       const mockPrimaryResponse = createMockSubmissionsResponse(recentFilings, paginatedFiles)
@@ -508,6 +517,7 @@ describe("fetchAllFilings", () => {
         form: ["10-K"],
         fileNumber: ["001-00001"],
         primaryDocument: ["filing.htm"],
+        primaryDocDescription: [""],
         size: [1024],
         isXBRL: [1],
         isInlineXBRL: [0],

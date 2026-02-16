@@ -1,5 +1,17 @@
 # edgar-ts
 
+## 0.1.1
+
+### Patch Changes
+
+- Fix SEC EDGAR API compatibility issues discovered during live testing
+
+  - Fix filing index URL to use `{accessionNo}-index.html` instead of `index.html` (which returns a directory listing without exhibit metadata)
+  - Fix paginated filing URL base from `www.sec.gov` to `data.sec.gov/submissions/`
+  - Fix SEC Submissions API response parsing: filings are returned as parallel arrays, not arrays of objects
+  - Filter non-exhibit document types (10-Q, GRAPHIC, XBRL schemas) from exhibit listing instead of throwing validation errors
+  - Add example script for live API testing
+
 ## 0.1.0
 
 ### Minor Changes

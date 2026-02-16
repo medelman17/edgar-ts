@@ -83,7 +83,7 @@ describe("ExhibitService", () => {
       await service.listExhibits(mockFiling)
 
       expect(httpClient.mockRequest).toHaveBeenCalledWith(
-        "https://www.sec.gov/Archives/edgar/data/0000320193/000119312520123456/index.html",
+        "https://www.sec.gov/Archives/edgar/data/0000320193/000119312520123456/0001193125-20-123456-index.html",
       )
     })
 
@@ -121,7 +121,7 @@ describe("ExhibitService", () => {
       const exhibits = await service.listExhibits(filing)
 
       expect(httpClient.mockRequest).toHaveBeenCalledWith(
-        "https://www.sec.gov/Archives/edgar/data/0001234567/000000000099123456/index.html",
+        "https://www.sec.gov/Archives/edgar/data/0001234567/000000000099123456/0000000000-99-123456-index.html",
       )
       expect(exhibits[0].exhibitUrl).toBe(
         "https://www.sec.gov/Archives/edgar/data/0001234567/000000000099123456/test.htm",
@@ -404,7 +404,7 @@ describe("ExhibitService", () => {
       // listContractExhibits should call listExhibits, which calls httpClient.request once
       expect(httpClient.mockRequest).toHaveBeenCalledTimes(1)
       expect(httpClient.mockRequest).toHaveBeenCalledWith(
-        "https://www.sec.gov/Archives/edgar/data/0000320193/000119312520123456/index.html",
+        "https://www.sec.gov/Archives/edgar/data/0000320193/000119312520123456/0001193125-20-123456-index.html",
       )
     })
   })
