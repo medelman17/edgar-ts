@@ -35,13 +35,14 @@ type EftsResponse = {
       _id: string
       _score: number
       _source: {
-        entity_name: string
-        file_num?: string
-        form_type: string
-        file_date: string
-        display_date_filed?: string
+        display_names?: string[]
+        file_num?: string[]
+        form?: string
+        root_forms?: string[]
+        file_date?: string
         file_description?: string
-        period_of_report?: string
+        period_ending?: string
+        adsh?: string
       }
     }>
   }
@@ -62,12 +63,12 @@ export class SearchService {
       total: data.hits.total.value,
       hits: data.hits.hits.map((hit) => ({
         id: hit._id,
-        entityName: hit._source.entity_name,
-        fileNumber: hit._source.file_num,
-        formType: hit._source.form_type,
-        fileDate: hit._source.file_date,
+        entityName: hit._source.display_names?.[0] ?? "",
+        fileNumber: hit._source.file_num?.[0],
+        formType: hit._source.form ?? hit._source.root_forms?.[0] ?? "",
+        fileDate: hit._source.file_date ?? "",
         fileDescription: hit._source.file_description,
-        periodOfReport: hit._source.period_of_report,
+        periodOfReport: hit._source.period_ending,
         score: hit._score,
       })),
     }

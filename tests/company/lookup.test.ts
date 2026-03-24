@@ -5,22 +5,20 @@ import { CompanyService } from "@/company/service"
 import type { SecHttpClient } from "@/http"
 
 /**
- * The SEC's company_tickers.json format:
- * Keys are numeric indices, values have cik_str (number), ticker, title, exchange
+ * The SEC's company_tickers_exchange.json format:
+ * { fields: ["cik", "name", "ticker", "exchange"], data: [[cik, name, ticker, exchange], ...] }
  */
 function createMockTickersResponse() {
   return {
-    "0": { cik_str: 320193, ticker: "AAPL", title: "Apple Inc.", exchange: "Nasdaq" },
-    "1": { cik_str: 789019, ticker: "MSFT", title: "MICROSOFT CORP", exchange: "Nasdaq" },
-    "2": { cik_str: 1018724, ticker: "AMZN", title: "AMAZON COM INC", exchange: "Nasdaq" },
-    "3": { cik_str: 1652044, ticker: "GOOGL", title: "Alphabet Inc.", exchange: "Nasdaq" },
-    "4": { cik_str: 1652044, ticker: "GOOG", title: "Alphabet Inc.", exchange: "Nasdaq" },
-    "5": {
-      cik_str: 51143,
-      ticker: "IBM",
-      title: "INTERNATIONAL BUSINESS MACHINES CORP",
-      exchange: "NYSE",
-    },
+    fields: ["cik", "name", "ticker", "exchange"],
+    data: [
+      [320193, "Apple Inc.", "AAPL", "Nasdaq"],
+      [789019, "MICROSOFT CORP", "MSFT", "Nasdaq"],
+      [1018724, "AMAZON COM INC", "AMZN", "Nasdaq"],
+      [1652044, "Alphabet Inc.", "GOOGL", "Nasdaq"],
+      [1652044, "Alphabet Inc.", "GOOG", "Nasdaq"],
+      [51143, "INTERNATIONAL BUSINESS MACHINES CORP", "IBM", "NYSE"],
+    ],
   }
 }
 
@@ -125,7 +123,7 @@ describe("CompanyService.lookupCompany", () => {
       await service.lookupCompany("AAPL")
 
       expect(httpClient.request).toHaveBeenCalledWith(
-        "https://www.sec.gov/files/company_tickers.json",
+        "https://www.sec.gov/files/company_tickers_exchange.json",
         { context: { operation: "lookupCompany", endpointClass: "files" } },
       )
     })

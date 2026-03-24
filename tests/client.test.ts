@@ -308,7 +308,8 @@ describe("EdgarClient", () => {
         ok: true,
         status: 200,
         json: async () => ({
-          "0": { cik_str: 320193, ticker: "AAPL", title: "Apple Inc.", exchange: "Nasdaq" },
+          fields: ["cik", "name", "ticker", "exchange"],
+          data: [[320193, "Apple Inc.", "AAPL", "Nasdaq"]],
         }),
       })
 
@@ -413,8 +414,8 @@ describe("EdgarClient", () => {
                 _id: "test",
                 _score: 10,
                 _source: {
-                  entity_name: "Apple Inc.",
-                  form_type: "10-K",
+                  display_names: ["Apple Inc."],
+                  form: "10-K",
                   file_date: "2024-01-15",
                 },
               },
@@ -427,7 +428,7 @@ describe("EdgarClient", () => {
       const result = await client.searchFilings({ q: "test" })
 
       expect(result.total).toBe(1)
-      expect(result.hits[0]?.entityName).toBe("Apple Inc.")
+      expect(result.hits[0]?.formType).toBe("10-K")
     })
   })
 

@@ -6,12 +6,10 @@ import type { SecHttpClient } from "@/http"
 import { fetchJson } from "@/http/fetch-json"
 import type { CompanyInfo, CompanyTicker } from "@/types"
 
-/** Raw entry from SEC company_tickers.json */
-type RawTickerEntry = {
-  cik_str: number
-  ticker: string
-  title: string
-  exchange: string
+/** SEC company_tickers_exchange.json response: { fields: string[], data: [cik, name, ticker, exchange][] } */
+type TickerExchangeResponse = {
+  fields: string[]
+  data: [number, string, string, string][]
 }
 
 export class CompanyService {
@@ -39,36 +37,26 @@ export class CompanyService {
   }
 
   async lookupCompany(query: string): Promise<CompanyTicker[]> {
-    const raw = await fetchJson<Record<string, RawTickerEntry>>(
-      "https://www.sec.gov/files/company_tickers.json",
+    const raw = await fetchJson<TickerExchangeResponse>(
+      "https://www.sec.gov/files/company_tickers_exchange.json",
       this.httpClient,
       { operation: "lookupCompany", endpointClass: "files" },
     )
 
-    const entries = Object.values(raw)
     const queryUpper = query.toUpperCase().trim()
     const queryLower = query.toLowerCase().trim()
 
     const tickerMatches: CompanyTicker[] = []
     const nameMatches: CompanyTicker[] = []
 
-    for (const entry of entries) {
-      if (entry.ticker.toUpperCase() === queryUpper) {
-        tickerMatches.push(toCompanyTicker(entry))
-      } else if (entry.title.toLowerCase().includes(queryLower)) {
-        nameMatches.push(toCompanyTicker(entry))
+    for (const [cikNum, name, ticker, exchange] of raw.data) {
+      if (ticker.toUpperCase() === queryUpper) {
+        tickerMatches.push({ cik: normalizeCik(String(cikNum)), ticker, name, exchange })
+      } else if (name.toLowerCase().includes(queryLower)) {
+        nameMatches.push({ cik: normalizeCik(String(cikNum)), ticker, name, exchange })
       }
     }
 
     return [...tickerMatches, ...nameMatches]
-  }
-}
-
-function toCompanyTicker(entry: RawTickerEntry): CompanyTicker {
-  return {
-    cik: normalizeCik(String(entry.cik_str)),
-    ticker: entry.ticker,
-    name: entry.title,
-    exchange: entry.exchange,
   }
 }

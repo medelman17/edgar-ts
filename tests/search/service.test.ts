@@ -15,12 +15,7 @@ function createMockHttpClient(response: unknown): SecHttpClient {
 }
 
 const SAMPLE_SEARCH_RESPONSE = {
-  query: {
-    q: "non-compete agreement",
-    dateRange: "custom",
-    startdt: "2024-01-01",
-    enddt: "2024-12-31",
-  },
+  query: { q: "non-compete agreement" },
   hits: {
     total: { value: 2, relation: "eq" },
     hits: [
@@ -28,12 +23,12 @@ const SAMPLE_SEARCH_RESPONSE = {
         _id: "0001193125-24-100001:filing-main.htm",
         _source: {
           file_date: "2024-06-15",
-          display_date_filed: "2024-06-15",
-          entity_name: "Apple Inc.",
-          file_num: "001-36743",
-          form_type: "10-K",
+          display_names: ["Apple Inc.  (AAPL)  (CIK 0000320193)"],
+          file_num: ["001-36743"],
+          form: "10-K",
+          root_forms: ["10-K"],
           file_description: "Annual report",
-          period_of_report: "2024-09-30",
+          period_ending: "2024-09-30",
         },
         _score: 12.5,
       },
@@ -41,10 +36,10 @@ const SAMPLE_SEARCH_RESPONSE = {
         _id: "0001193125-24-200001:exhibit10-1.htm",
         _source: {
           file_date: "2024-03-15",
-          display_date_filed: "2024-03-15",
-          entity_name: "MICROSOFT CORP",
-          file_num: "001-14278",
-          form_type: "8-K",
+          display_names: ["MICROSOFT CORP  (MSFT)  (CIK 0000789019)"],
+          file_num: ["001-14278"],
+          form: "8-K",
+          root_forms: ["8-K"],
           file_description: "Current report",
         },
         _score: 8.3,
@@ -63,7 +58,7 @@ describe("SearchService", () => {
 
       expect(result.total).toBe(2)
       expect(result.hits).toHaveLength(2)
-      expect(result.hits[0]?.entityName).toBe("Apple Inc.")
+      expect(result.hits[0]?.entityName).toBe("Apple Inc.  (AAPL)  (CIK 0000320193)")
       expect(result.hits[0]?.formType).toBe("10-K")
     })
 
