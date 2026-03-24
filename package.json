@@ -1,6 +1,6 @@
 {
   "name": "edgar-ts",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "TypeScript SEC EDGAR client for filing discovery and contract exhibit acquisition. SEC-compliant rate limiting, retry, and deterministic normalization.",
   "type": "module",
   "packageManager": "pnpm@10.6.5",
