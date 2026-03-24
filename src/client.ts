@@ -6,6 +6,8 @@ import { DownloadService } from "@/download"
 import { ConfigurationError } from "@/errors"
 import { ExhibitService } from "@/exhibits"
 import { SecHttpClient } from "@/http"
+import type { SearchQuery, SearchResult } from "@/search"
+import { SearchService } from "@/search"
 import type {
   CompanyInfo,
   CompanyTicker,
@@ -33,6 +35,7 @@ export class EdgarClient {
   > & { retries: RetryOptions; telemetry: EdgarClientOptions["telemetry"] }
   private readonly httpClient: SecHttpClient
   private readonly bulkDataService: BulkDataService
+  private readonly searchService: SearchService
   private readonly xbrlService: XbrlService
   private readonly companyService: CompanyService
   private readonly discoveryService: DiscoveryService
@@ -56,6 +59,7 @@ export class EdgarClient {
     this.httpClient = new SecHttpClient(this.options)
     this.bulkDataService = new BulkDataService(this.httpClient)
     this.companyService = new CompanyService(this.httpClient)
+    this.searchService = new SearchService(this.httpClient)
     this.xbrlService = new XbrlService(this.httpClient)
     this.discoveryService = new DiscoveryService(this.httpClient)
     this.exhibitService = new ExhibitService(this.httpClient)
@@ -104,5 +108,9 @@ export class EdgarClient {
 
   async getFrame(taxonomy: string, tag: string, unit: string, period: string): Promise<Frame> {
     return this.xbrlService.getFrame(taxonomy, tag, unit, period)
+  }
+
+  async searchFilings(query: SearchQuery): Promise<SearchResult> {
+    return this.searchService.searchFilings(query)
   }
 }
