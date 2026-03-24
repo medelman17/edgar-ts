@@ -1,3 +1,5 @@
+import type { BulkDownloadResult } from "@/bulk"
+import { BulkDataService } from "@/bulk"
 import { CompanyService } from "@/company"
 import { DiscoveryService } from "@/discovery"
 import { DownloadService } from "@/download"
@@ -28,6 +30,7 @@ export class EdgarClient {
     Pick<EdgarClientOptions, "userAgent" | "maxRequestsPerSecond" | "timeoutMs">
   > & { retries: RetryOptions; telemetry: EdgarClientOptions["telemetry"] }
   private readonly httpClient: SecHttpClient
+  private readonly bulkDataService: BulkDataService
   private readonly companyService: CompanyService
   private readonly discoveryService: DiscoveryService
   private readonly exhibitService: ExhibitService
@@ -48,6 +51,7 @@ export class EdgarClient {
 
     // Initialize HTTP client and services
     this.httpClient = new SecHttpClient(this.options)
+    this.bulkDataService = new BulkDataService(this.httpClient)
     this.companyService = new CompanyService(this.httpClient)
     this.discoveryService = new DiscoveryService(this.httpClient)
     this.exhibitService = new ExhibitService(this.httpClient)
@@ -76,5 +80,13 @@ export class EdgarClient {
 
   async downloadExhibit(exhibit: ExhibitRef): Promise<DownloadedExhibit> {
     return this.downloadService.downloadExhibit(exhibit)
+  }
+
+  async downloadSubmissionsBulk(): Promise<BulkDownloadResult> {
+    return this.bulkDataService.downloadSubmissionsBulk()
+  }
+
+  async downloadCompanyFactsBulk(): Promise<BulkDownloadResult> {
+    return this.bulkDataService.downloadCompanyFactsBulk()
   }
 }
