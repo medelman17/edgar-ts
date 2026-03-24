@@ -102,6 +102,27 @@ export type ExhibitRef = {
   exhibitUrl: string
 }
 
+export type CompanyInfo = {
+  /** Central Index Key (10-digit zero-padded) */
+  cik: string
+  /** Entity name */
+  name: string
+  /** Trading symbols */
+  tickers: string[]
+  /** Stock exchanges */
+  exchanges: string[]
+  /** Entity type (e.g. "operating") */
+  entityType?: string
+  /** SIC code */
+  sic?: string
+  /** SIC description */
+  sicDescription?: string
+  /** State of incorporation */
+  stateOfIncorporation?: string
+  /** Fiscal year end (MMDD format) */
+  fiscalYearEnd?: string
+}
+
 export type DownloadedExhibit = {
   /** The exhibit reference */
   exhibit: ExhibitRef

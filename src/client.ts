@@ -1,9 +1,11 @@
-import { ConfigurationError } from "@/errors"
+import { CompanyService } from "@/company"
 import { DiscoveryService } from "@/discovery"
 import { DownloadService } from "@/download"
+import { ConfigurationError } from "@/errors"
 import { ExhibitService } from "@/exhibits"
 import { SecHttpClient } from "@/http"
 import type {
+  CompanyInfo,
   DiscoverFilingsInput,
   DownloadedExhibit,
   EdgarClientOptions,
@@ -25,6 +27,7 @@ export class EdgarClient {
     Pick<EdgarClientOptions, "userAgent" | "maxRequestsPerSecond" | "timeoutMs">
   > & { retries: RetryOptions; telemetry: EdgarClientOptions["telemetry"] }
   private readonly httpClient: SecHttpClient
+  private readonly companyService: CompanyService
   private readonly discoveryService: DiscoveryService
   private readonly exhibitService: ExhibitService
   private readonly downloadService: DownloadService
@@ -44,9 +47,14 @@ export class EdgarClient {
 
     // Initialize HTTP client and services
     this.httpClient = new SecHttpClient(this.options)
+    this.companyService = new CompanyService(this.httpClient)
     this.discoveryService = new DiscoveryService(this.httpClient)
     this.exhibitService = new ExhibitService(this.httpClient)
     this.downloadService = new DownloadService(this.httpClient)
+  }
+
+  async getCompanyInfo(cik: string): Promise<CompanyInfo> {
+    return this.companyService.getCompanyInfo(cik)
   }
 
   async discoverFilings(input: DiscoverFilingsInput): Promise<FilingRef[]> {

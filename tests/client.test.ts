@@ -242,6 +242,58 @@ describe("EdgarClient", () => {
     })
   })
 
+  describe("getCompanyInfo", () => {
+    it("returns company metadata for a valid CIK", async () => {
+      const mockResponse = {
+        cik: "0000320193",
+        name: "Apple Inc.",
+        tickers: ["AAPL"],
+        exchanges: ["Nasdaq"],
+        entityType: "operating",
+        sic: "3571",
+        sicDescription: "Electronic Computers",
+        stateOfIncorporation: "CA",
+        fiscalYearEnd: "0930",
+        filings: {
+          recent: {
+            accessionNumber: [],
+            filingDate: [],
+            reportDate: [],
+            acceptanceDateTime: [],
+            act: [],
+            form: [],
+            fileNumber: [],
+            primaryDocument: [],
+            primaryDocDescription: [],
+            size: [],
+            isXBRL: [],
+            isInlineXBRL: [],
+          },
+          files: [],
+        },
+      }
+
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => mockResponse,
+      })
+
+      const client = new EdgarClient({
+        userAgent: "TestBot/1.0 (test@example.com)",
+      })
+
+      const info = await client.getCompanyInfo("320193")
+
+      expect(info.cik).toBe("0000320193")
+      expect(info.name).toBe("Apple Inc.")
+      expect(info.tickers).toEqual(["AAPL"])
+      expect(info.exchanges).toEqual(["Nasdaq"])
+      expect(info.sic).toBe("3571")
+      expect(info.stateOfIncorporation).toBe("CA")
+    })
+  })
+
   describe("listExhibits", () => {
     it("lists all exhibits for a filing with count and field verification", async () => {
       const mockIndexHtml = `
