@@ -302,6 +302,135 @@ describe("EdgarClient", () => {
     })
   })
 
+  describe("lookupCompany", () => {
+    it("resolves a ticker to company info", async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          "0": { cik_str: 320193, ticker: "AAPL", title: "Apple Inc.", exchange: "Nasdaq" },
+        }),
+      })
+
+      const client = new EdgarClient({ userAgent: "TestBot/1.0 (test@example.com)" })
+      const results = await client.lookupCompany("AAPL")
+
+      expect(results).toHaveLength(1)
+      expect(results[0]?.cik).toBe("0000320193")
+    })
+  })
+
+  describe("downloadSubmissionsBulk", () => {
+    it("returns bulk download result", async () => {
+      const data = new TextEncoder().encode("fake-zip")
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        arrayBuffer: async () => data.buffer,
+        headers: { get: (n: string) => (n === "Content-Type" ? "application/zip" : null) },
+      })
+
+      const client = new EdgarClient({ userAgent: "TestBot/1.0 (test@example.com)" })
+      const result = await client.downloadSubmissionsBulk()
+
+      expect(result.source).toBe("submissions")
+      expect(result.bytes).toBeInstanceOf(Uint8Array)
+    })
+  })
+
+  describe("downloadCompanyFactsBulk", () => {
+    it("returns bulk download result", async () => {
+      const data = new TextEncoder().encode("fake-zip")
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        arrayBuffer: async () => data.buffer,
+        headers: { get: (n: string) => (n === "Content-Type" ? "application/zip" : null) },
+      })
+
+      const client = new EdgarClient({ userAgent: "TestBot/1.0 (test@example.com)" })
+      const result = await client.downloadCompanyFactsBulk()
+
+      expect(result.source).toBe("companyfacts")
+    })
+  })
+
+  describe("getCompanyFacts", () => {
+    it("returns XBRL facts for a CIK", async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({ cik: 320193, entityName: "Apple Inc.", facts: {} }),
+      })
+
+      const client = new EdgarClient({ userAgent: "TestBot/1.0 (test@example.com)" })
+      const result = await client.getCompanyFacts("320193")
+
+      expect(result.entityName).toBe("Apple Inc.")
+    })
+  })
+
+  describe("getCompanyConcept", () => {
+    it("returns concept time series", async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({ cik: 320193, taxonomy: "us-gaap", tag: "Revenue", units: { USD: [] } }),
+      })
+
+      const client = new EdgarClient({ userAgent: "TestBot/1.0 (test@example.com)" })
+      const result = await client.getCompanyConcept("320193", "us-gaap", "Revenue")
+
+      expect(result.tag).toBe("Revenue")
+    })
+  })
+
+  describe("getFrame", () => {
+    it("returns cross-company frame data", async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({ taxonomy: "us-gaap", tag: "Revenue", data: [] }),
+      })
+
+      const client = new EdgarClient({ userAgent: "TestBot/1.0 (test@example.com)" })
+      const result = await client.getFrame("us-gaap", "Revenue", "USD", "CY2024")
+
+      expect(result.taxonomy).toBe("us-gaap")
+    })
+  })
+
+  describe("searchFilings", () => {
+    it("returns search results", async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          hits: {
+            total: { value: 1 },
+            hits: [
+              {
+                _id: "test",
+                _score: 10,
+                _source: {
+                  entity_name: "Apple Inc.",
+                  form_type: "10-K",
+                  file_date: "2024-01-15",
+                },
+              },
+            ],
+          },
+        }),
+      })
+
+      const client = new EdgarClient({ userAgent: "TestBot/1.0 (test@example.com)" })
+      const result = await client.searchFilings({ q: "test" })
+
+      expect(result.total).toBe(1)
+      expect(result.hits[0]?.entityName).toBe("Apple Inc.")
+    })
+  })
+
   describe("listExhibits", () => {
     it("lists all exhibits for a filing with count and field verification", async () => {
       const mockIndexHtml = `
