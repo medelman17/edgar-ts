@@ -1,8 +1,8 @@
 // EFTS full-text search tests
 
 import { describe, expect, it, vi } from "vitest"
-import { SearchService } from "@/search/service"
 import type { SecHttpClient } from "@/http"
+import { SearchService } from "@/search/service"
 
 function createMockHttpClient(response: unknown): SecHttpClient {
   return {
@@ -15,7 +15,12 @@ function createMockHttpClient(response: unknown): SecHttpClient {
 }
 
 const SAMPLE_SEARCH_RESPONSE = {
-  query: { q: "non-compete agreement", dateRange: "custom", startdt: "2024-01-01", enddt: "2024-12-31" },
+  query: {
+    q: "non-compete agreement",
+    dateRange: "custom",
+    startdt: "2024-01-01",
+    enddt: "2024-12-31",
+  },
   hits: {
     total: { value: 2, relation: "eq" },
     hits: [
@@ -87,10 +92,9 @@ describe("SearchService", () => {
 
       await service.searchFilings({ q: "test" })
 
-      expect(httpClient.request).toHaveBeenCalledWith(
-        expect.any(String),
-        { context: { operation: "searchFilings", endpointClass: "efts" } },
-      )
+      expect(httpClient.request).toHaveBeenCalledWith(expect.any(String), {
+        context: { operation: "searchFilings", endpointClass: "efts" },
+      })
     })
 
     it("should handle pagination with from parameter", async () => {

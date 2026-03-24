@@ -1,7 +1,7 @@
 declare const process: { stdout: WritableStream }
 declare const console: { error: (message: string, extra?: string) => void }
 
-import type { TelemetryOptions, RequestStartEvent, RequestEndEvent, RetryEvent } from "@/types"
+import type { RequestEndEvent, RequestStartEvent, RetryEvent, TelemetryOptions } from "@/types"
 
 type TelemetryEvent = RequestStartEvent | RequestEndEvent | RetryEvent
 
@@ -36,10 +36,7 @@ export type StructuredLoggerOptions = {
  * ```
  */
 export function createStructuredLogger(options: StructuredLoggerOptions = {}): TelemetryOptions {
-  const {
-    stream = process.stdout,
-    formatter = (event) => JSON.stringify(event),
-  } = options
+  const { stream = process.stdout, formatter = (event) => JSON.stringify(event) } = options
 
   // Validate stream at creation time
   if (!stream.writable) {
@@ -54,7 +51,7 @@ export function createStructuredLogger(options: StructuredLoggerOptions = {}): T
     } catch (err) {
       console.error(
         "[edgar-ts/telemetry:structured-logger] Error serializing event:",
-        (err as Error).message
+        (err as Error).message,
       )
     }
   }

@@ -61,10 +61,7 @@ export class TokenBucket {
       const elapsedMs = now - this.lastRefillTime
 
       // Refill tokens based on elapsed time
-      this.tokens = Math.min(
-        this.capacity,
-        this.tokens + elapsedMs * this.refillRatePerMs,
-      )
+      this.tokens = Math.min(this.capacity, this.tokens + elapsedMs * this.refillRatePerMs)
       this.lastRefillTime = now
 
       // Tokens available: acquire immediately

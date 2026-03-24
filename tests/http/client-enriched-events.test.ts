@@ -2,7 +2,7 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { SecHttpClient } from "@/http/client"
-import type { RequestStartEvent, RequestEndEvent, RetryEvent } from "@/types"
+import type { RequestEndEvent, RequestStartEvent, RetryEvent } from "@/types"
 
 describe("SecHttpClient enriched telemetry events", () => {
   beforeEach(() => {

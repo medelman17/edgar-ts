@@ -148,7 +148,7 @@ describe("CompanyService", () => {
       const service = new CompanyService(httpClient)
 
       await expect(service.getCompanyInfo("320193")).rejects.toThrow(
-        "Failed to parse submissions JSON",
+        "Failed to parse JSON from",
       )
     })
   })

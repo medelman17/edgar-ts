@@ -1,7 +1,7 @@
 declare const process: { stderr: WriteStream }
 declare const console: { error: (message: string, extra?: string) => void }
 
-import type { TelemetryOptions, RequestStartEvent, RequestEndEvent, RetryEvent } from "@/types"
+import type { RequestEndEvent, RequestStartEvent, RetryEvent, TelemetryOptions } from "@/types"
 
 type WriteStream = {
   write: (data: string) => boolean
@@ -55,11 +55,7 @@ export type ConsoleLoggerOptions = {
  * ```
  */
 export function createConsoleLogger(options: ConsoleLoggerOptions = {}): TelemetryOptions {
-  const {
-    colors = true,
-    timestamps = true,
-    errorStream = process.stderr,
-  } = options
+  const { colors = true, timestamps = true, errorStream = process.stderr } = options
 
   const colorize = (text: string, color: string) => {
     if (!colors) return text
@@ -80,7 +76,10 @@ export function createConsoleLogger(options: ConsoleLoggerOptions = {}): Telemet
       const msg = `${formatTimestamp()}${colorize("→", "cyan")} ${event.method} ${event.url} ${colorize(`[${event.operation}]`, "gray")} {${event.requestId.slice(0, 8)}}`
       write(msg)
     } catch (err) {
-      console.error("[edgar-ts/telemetry:console-logger] Error in onRequestStart:", (err as Error).message)
+      console.error(
+        "[edgar-ts/telemetry:console-logger] Error in onRequestStart:",
+        (err as Error).message,
+      )
       write(JSON.stringify(event))
     }
   }
@@ -91,7 +90,10 @@ export function createConsoleLogger(options: ConsoleLoggerOptions = {}): Telemet
       const msg = `${formatTimestamp()}${colorize("←", "cyan")} ${colorize(String(event.statusCode), statusColor)} ${event.method} ${event.url} ${colorize(`${event.durationMs}ms`, "gray")} ${colorize(`[${event.operation}]`, "gray")}`
       write(msg)
     } catch (err) {
-      console.error("[edgar-ts/telemetry:console-logger] Error in onRequestEnd:", (err as Error).message)
+      console.error(
+        "[edgar-ts/telemetry:console-logger] Error in onRequestEnd:",
+        (err as Error).message,
+      )
       write(JSON.stringify(event))
     }
   }

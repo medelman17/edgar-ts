@@ -1,10 +1,10 @@
 // DiscoveryService integration tests
 
-import { ValidationError } from "@/errors"
-import type { SecHttpClient } from "@/http"
+import { describe, expect, it, vi } from "vitest"
 import { DiscoveryService } from "@/discovery/service"
 import type { FilingRecord, SubmissionsResponse } from "@/discovery/types"
-import { describe, expect, it, vi } from "vitest"
+import { ValidationError } from "@/errors"
+import type { SecHttpClient } from "@/http"
 
 // Mock HTTP response type (SecHttpClient returns HttpResponse without json method)
 type MockHttpResponse = {

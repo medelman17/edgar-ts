@@ -63,9 +63,12 @@ export function normalizeExhibitType(input: string): string {
   // Validate pattern: EX-## or EX-##.## or EX-##A (letter suffix)
   // Pattern allows single letter suffix OR dotted decimal, but not both simultaneously
   if (!/^EX-\d+(\.\d+|[A-Z])?$/.test(normalized)) {
-    throw new ValidationError("Invalid exhibit type: must match pattern EX-##, EX-##.##, or EX-##A", {
-      metadata: { input, normalized },
-    })
+    throw new ValidationError(
+      "Invalid exhibit type: must match pattern EX-##, EX-##.##, or EX-##A",
+      {
+        metadata: { input, normalized },
+      },
+    )
   }
 
   return normalized

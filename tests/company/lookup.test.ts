@@ -15,7 +15,12 @@ function createMockTickersResponse() {
     "2": { cik_str: 1018724, ticker: "AMZN", title: "AMAZON COM INC", exchange: "Nasdaq" },
     "3": { cik_str: 1652044, ticker: "GOOGL", title: "Alphabet Inc.", exchange: "Nasdaq" },
     "4": { cik_str: 1652044, ticker: "GOOG", title: "Alphabet Inc.", exchange: "Nasdaq" },
-    "5": { cik_str: 51143, ticker: "IBM", title: "INTERNATIONAL BUSINESS MACHINES CORP", exchange: "NYSE" },
+    "5": {
+      cik_str: 51143,
+      ticker: "IBM",
+      title: "INTERNATIONAL BUSINESS MACHINES CORP",
+      exchange: "NYSE",
+    },
   }
 }
 

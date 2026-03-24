@@ -2,8 +2,8 @@
 
 import { fetchSubmissionsResponse } from "@/discovery/fetch-submissions"
 import { normalizeCik } from "@/discovery/normalization"
-import { ParseError } from "@/errors"
 import type { SecHttpClient } from "@/http"
+import { fetchJson } from "@/http/fetch-json"
 import type { CompanyInfo, CompanyTicker } from "@/types"
 
 /** Raw entry from SEC company_tickers.json */
@@ -39,46 +39,36 @@ export class CompanyService {
   }
 
   async lookupCompany(query: string): Promise<CompanyTicker[]> {
-    const url = "https://www.sec.gov/files/company_tickers.json"
-    const response = (await this.httpClient.request(url, {
-      context: { operation: "lookupCompany", endpointClass: "files" },
-    })) as unknown as { json(): Promise<unknown> }
-
-    let raw: Record<string, RawTickerEntry>
-    try {
-      raw = (await response.json()) as Record<string, RawTickerEntry>
-    } catch (error) {
-      throw new ParseError(`Failed to parse company tickers JSON from ${url}`, {
-        metadata: { url },
-        cause: error,
-      })
-    }
+    const raw = await fetchJson<Record<string, RawTickerEntry>>(
+      "https://www.sec.gov/files/company_tickers.json",
+      this.httpClient,
+      { operation: "lookupCompany", endpointClass: "files" },
+    )
 
     const entries = Object.values(raw)
     const queryUpper = query.toUpperCase().trim()
     const queryLower = query.toLowerCase().trim()
 
-    // Exact ticker matches (case-insensitive)
     const tickerMatches: CompanyTicker[] = []
-    // Name substring matches (case-insensitive)
     const nameMatches: CompanyTicker[] = []
 
     for (const entry of entries) {
-      const mapped: CompanyTicker = {
-        cik: String(entry.cik_str).padStart(10, "0"),
-        ticker: entry.ticker,
-        name: entry.title,
-        exchange: entry.exchange,
-      }
-
       if (entry.ticker.toUpperCase() === queryUpper) {
-        tickerMatches.push(mapped)
+        tickerMatches.push(toCompanyTicker(entry))
       } else if (entry.title.toLowerCase().includes(queryLower)) {
-        nameMatches.push(mapped)
+        nameMatches.push(toCompanyTicker(entry))
       }
     }
 
-    // Ticker matches first, then name matches
     return [...tickerMatches, ...nameMatches]
+  }
+}
+
+function toCompanyTicker(entry: RawTickerEntry): CompanyTicker {
+  return {
+    cik: normalizeCik(String(entry.cik_str)),
+    ticker: entry.ticker,
+    name: entry.title,
+    exchange: entry.exchange,
   }
 }

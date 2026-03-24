@@ -1,13 +1,8 @@
 // HTTP status code to typed error classification
 // Maps SEC EDGAR responses to retryable/non-retryable errors
 
-import {
-  NotFoundError,
-  RateLimitedError,
-  TimeoutError,
-  TransportError,
-} from "@/errors"
 import type { EdgarError } from "@/errors"
+import { NotFoundError, RateLimitedError, TimeoutError, TransportError } from "@/errors"
 
 /**
  * Classify HTTP response error by status code

@@ -1,8 +1,8 @@
 // XbrlService — typed access to SEC XBRL REST APIs (Layer 1)
 
 import { normalizeCik } from "@/discovery/normalization"
-import { ParseError } from "@/errors"
 import type { SecHttpClient } from "@/http"
+import { fetchJson } from "@/http/fetch-json"
 
 export type CompanyFacts = {
   cik: number
@@ -60,33 +60,27 @@ export class XbrlService {
 
   async getCompanyFacts(cik: string): Promise<CompanyFacts> {
     const normalizedCik = normalizeCik(cik)
-    const url = `https://data.sec.gov/api/xbrl/companyfacts/CIK${normalizedCik}.json`
-    return this.fetchJson<CompanyFacts>(url, "getCompanyFacts")
+    return fetchJson<CompanyFacts>(
+      `https://data.sec.gov/api/xbrl/companyfacts/CIK${normalizedCik}.json`,
+      this.httpClient,
+      { operation: "getCompanyFacts", endpointClass: "xbrl" },
+    )
   }
 
   async getCompanyConcept(cik: string, taxonomy: string, tag: string): Promise<CompanyConcept> {
     const normalizedCik = normalizeCik(cik)
-    const url = `https://data.sec.gov/api/xbrl/companyconcept/CIK${normalizedCik}/${taxonomy}/${tag}.json`
-    return this.fetchJson<CompanyConcept>(url, "getCompanyConcept")
+    return fetchJson<CompanyConcept>(
+      `https://data.sec.gov/api/xbrl/companyconcept/CIK${normalizedCik}/${taxonomy}/${tag}.json`,
+      this.httpClient,
+      { operation: "getCompanyConcept", endpointClass: "xbrl" },
+    )
   }
 
   async getFrame(taxonomy: string, tag: string, unit: string, period: string): Promise<Frame> {
-    const url = `https://data.sec.gov/api/xbrl/frames/${taxonomy}/${tag}/${unit}/${period}.json`
-    return this.fetchJson<Frame>(url, "getFrame")
-  }
-
-  private async fetchJson<T>(url: string, operation: string): Promise<T> {
-    const response = (await this.httpClient.request(url, {
-      context: { operation, endpointClass: "xbrl" },
-    })) as unknown as { json(): Promise<unknown> }
-
-    try {
-      return (await response.json()) as T
-    } catch (error) {
-      throw new ParseError(`Failed to parse XBRL JSON from ${url}`, {
-        metadata: { url },
-        cause: error,
-      })
-    }
+    return fetchJson<Frame>(
+      `https://data.sec.gov/api/xbrl/frames/${taxonomy}/${tag}/${unit}/${period}.json`,
+      this.httpClient,
+      { operation: "getFrame", endpointClass: "xbrl" },
+    )
   }
 }

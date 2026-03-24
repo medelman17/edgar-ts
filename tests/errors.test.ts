@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest"
 import {
-  EdgarError,
   ConfigurationError,
-  ValidationError,
-  TransportError,
-  RateLimitedError,
-  TimeoutError,
+  EdgarError,
   NotFoundError,
   ParseError,
+  RateLimitedError,
+  TimeoutError,
+  TransportError,
+  ValidationError,
 } from "@/errors"
 
 describe("Error taxonomy", () => {

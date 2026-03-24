@@ -1,4 +1,4 @@
-import { describe, test, expect } from "vitest"
+import { describe, expect, test } from "vitest"
 import { dedupeAndSort } from "@/discovery"
 import type { FilingRef } from "@/types"
 
@@ -14,7 +14,8 @@ describe("dedupeAndSort", () => {
       accessionNo: "0001193125-20-123456",
       formType: "10-K",
       filingDate: "2020-10-29",
-      filingUrl: "https://www.sec.gov/Archives/edgar/data/320193/000119312520123456/0001193125-20-123456.txt",
+      filingUrl:
+        "https://www.sec.gov/Archives/edgar/data/320193/000119312520123456/0001193125-20-123456.txt",
     }
 
     const result = dedupeAndSort([filing])
@@ -27,7 +28,8 @@ describe("dedupeAndSort", () => {
       accessionNo: "0001193125-20-123456",
       formType: "10-K",
       filingDate: "2020-10-29",
-      filingUrl: "https://www.sec.gov/Archives/edgar/data/320193/000119312520123456/0001193125-20-123456.txt",
+      filingUrl:
+        "https://www.sec.gov/Archives/edgar/data/320193/000119312520123456/0001193125-20-123456.txt",
     }
 
     const filing2: FilingRef = {
@@ -35,7 +37,8 @@ describe("dedupeAndSort", () => {
       accessionNo: "0001193125-20-123456",
       formType: "10-K",
       filingDate: "2020-10-29",
-      filingUrl: "https://www.sec.gov/Archives/edgar/data/320193/000119312520123456/0001193125-20-123456.txt",
+      filingUrl:
+        "https://www.sec.gov/Archives/edgar/data/320193/000119312520123456/0001193125-20-123456.txt",
     }
 
     const result = dedupeAndSort([filing1, filing2])

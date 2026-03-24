@@ -82,7 +82,7 @@ describe("fetchAllFilings", () => {
             operation: "discoverFilings",
             endpointClass: "submissions",
           }),
-        })
+        }),
       )
     })
 
@@ -107,7 +107,7 @@ describe("fetchAllFilings", () => {
             operation: "discoverFilings",
             endpointClass: "submissions",
           }),
-        })
+        }),
       )
     })
 
@@ -257,7 +257,7 @@ describe("fetchAllFilings", () => {
             operation: "discoverFilings",
             endpointClass: "submissions",
           }),
-        })
+        }),
       )
 
       // Verify paginated file requests use data.sec.gov base
@@ -268,7 +268,7 @@ describe("fetchAllFilings", () => {
             operation: "discoverFilings",
             endpointClass: "submissions",
           }),
-        })
+        }),
       )
       expect(httpClient.request).toHaveBeenCalledWith(
         "https://data.sec.gov/submissions/CIK0000320193-submissions-002.json",
@@ -277,7 +277,7 @@ describe("fetchAllFilings", () => {
             operation: "discoverFilings",
             endpointClass: "submissions",
           }),
-        })
+        }),
       )
 
       // Verify filings from different sources are included
@@ -291,9 +291,7 @@ describe("fetchAllFilings", () => {
         accessionNumber: `0001193125-24-${String(i).padStart(6, "0")}`,
       }))
 
-      const paginatedFiles = [
-        { name: "CIK0000320193-submissions-001.json", filingCount: 200 },
-      ]
+      const paginatedFiles = [{ name: "CIK0000320193-submissions-001.json", filingCount: 200 }]
 
       const mockPrimaryResponse = createMockSubmissionsResponse(recentFilings, paginatedFiles)
 
@@ -409,9 +407,7 @@ describe("fetchAllFilings", () => {
   describe("pagination URL construction", () => {
     it("uses data.sec.gov base for paginated files", async () => {
       const recentFilings = [{}]
-      const paginatedFiles = [
-        { name: "CIK0000320193-submissions-001.json", filingCount: 100 },
-      ]
+      const paginatedFiles = [{ name: "CIK0000320193-submissions-001.json", filingCount: 100 }]
 
       const mockPrimaryResponse = createMockSubmissionsResponse(recentFilings, paginatedFiles)
 
@@ -446,7 +442,9 @@ describe("fetchAllFilings", () => {
 
       // Verify paginated URL uses data.sec.gov/submissions/ base
       const calls = vi.mocked(httpClient.request).mock.calls
-      expect(calls[1][0]).toBe("https://data.sec.gov/submissions/CIK0000320193-submissions-001.json")
+      expect(calls[1][0]).toBe(
+        "https://data.sec.gov/submissions/CIK0000320193-submissions-001.json",
+      )
     })
   })
 
@@ -466,9 +464,7 @@ describe("fetchAllFilings", () => {
 
     it("propagates HTTP errors from paginated file requests", async () => {
       const recentFilings = [{}]
-      const paginatedFiles = [
-        { name: "CIK0000320193-submissions-001.json", filingCount: 100 },
-      ]
+      const paginatedFiles = [{ name: "CIK0000320193-submissions-001.json", filingCount: 100 }]
 
       const mockPrimaryResponse = createMockSubmissionsResponse(recentFilings, paginatedFiles)
 
@@ -502,16 +498,14 @@ describe("fetchAllFilings", () => {
       await expect(fetchAllFilings("0000320193", httpClient)).rejects.toThrow(
         expect.objectContaining({
           name: "ParseError",
-          message: expect.stringContaining("Failed to parse submissions JSON"),
+          message: expect.stringContaining("Failed to parse JSON from"),
         }),
       )
     })
 
     it("throws ParseError on invalid JSON from paginated file", async () => {
       const recentFilings = [{}]
-      const paginatedFiles = [
-        { name: "CIK0000320193-submissions-001.json", filingCount: 100 },
-      ]
+      const paginatedFiles = [{ name: "CIK0000320193-submissions-001.json", filingCount: 100 }]
 
       const mockPrimaryResponse = createMockSubmissionsResponse(recentFilings, paginatedFiles)
 
@@ -541,9 +535,7 @@ describe("fetchAllFilings", () => {
   describe("all requests route through SecHttpClient", () => {
     it("uses httpClient for all HTTP requests", async () => {
       const recentFilings = [{}]
-      const paginatedFiles = [
-        { name: "CIK0000320193-submissions-001.json", filingCount: 1 },
-      ]
+      const paginatedFiles = [{ name: "CIK0000320193-submissions-001.json", filingCount: 1 }]
 
       const mockPrimaryResponse = createMockSubmissionsResponse(recentFilings, paginatedFiles)
 

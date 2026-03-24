@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import type { RequestStartEvent, RequestEndEvent, RetryEvent } from "@/types"
+import type { RequestEndEvent, RequestStartEvent, RetryEvent } from "@/types"
 
 describe("Enriched event types", () => {
   it("RequestStartEvent includes enriched fields", () => {

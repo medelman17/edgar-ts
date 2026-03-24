@@ -6,22 +6,20 @@ import { dedupeAndSort } from "./deduplication"
 import { parseIndexFile } from "./index-parser"
 import { normalizeAccession, normalizeFormType } from "./normalization"
 
+const ACCESSION_RE = /(\d{10}-\d{2}-\d{6})|(\d{18})/
+
 export type IndexDiscoveryInput = {
   from: string
   to: string
   formTypes?: string[]
 }
 
-/**
- * Discover filings via SEC quarterly index files (master.idx).
- * More efficient than per-CIK Submissions API for broad discovery.
- */
 export class IndexService {
   constructor(private readonly httpClient: SecHttpClient) {}
 
   async discoverByIndex(input: IndexDiscoveryInput): Promise<FilingRef[]> {
     const quarters = getQuartersInRange(input.from, input.to)
-    const normalizedFormTypes = input.formTypes?.map(normalizeFormType)
+    const formTypeSet = input.formTypes ? new Set(input.formTypes.map(normalizeFormType)) : null
 
     const allFilings: FilingRef[] = []
 
@@ -36,25 +34,21 @@ export class IndexService {
       const entries = parseIndexFile(content)
 
       for (const entry of entries) {
-        // Date range filter
         if (entry.filingDate < input.from || entry.filingDate > input.to) {
           continue
         }
 
-        // Form type filter
-        if (normalizedFormTypes && !normalizedFormTypes.includes(entry.formType)) {
+        if (formTypeSet && !formTypeSet.has(entry.formType)) {
           continue
         }
 
-        // Extract accession number from filename
-        // Format: edgar/data/{cik}/{accessionNoCompact}.txt
-        const accessionMatch =
-          entry.filename.match(/(\d{10}-\d{2}-\d{6})/) ?? entry.filename.match(/(\d{18})/)
+        const accessionMatch = entry.filename.match(ACCESSION_RE)
         if (!accessionMatch) {
           continue
         }
 
-        const accessionNo = normalizeAccession(accessionMatch[1] ?? "")
+        const rawAccession = accessionMatch[1] ?? accessionMatch[2] ?? ""
+        const accessionNo = normalizeAccession(rawAccession)
         const accessionNoCompact = accessionNo.replace(/-/g, "")
         const filingUrl = `https://www.sec.gov/cgi-bin/viewer?action=view&cik=${entry.cik}&accession_number=${accessionNoCompact}&xbrl_type=v`
 

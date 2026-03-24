@@ -1,6 +1,6 @@
 declare const console: { error: (message: string, extra?: string) => void }
 
-import type { TelemetryOptions, RequestStartEvent, RequestEndEvent, RetryEvent } from "@/types"
+import type { RequestEndEvent, RequestStartEvent, RetryEvent, TelemetryOptions } from "@/types"
 
 type LatencyStats = {
   count: number
@@ -59,7 +59,7 @@ export function createMetricsAggregator(): TelemetryOptions & {
     } catch (err) {
       console.error(
         "[edgar-ts/telemetry:metrics-aggregator] Error in onRequestStart:",
-        (err as Error).message
+        (err as Error).message,
       )
     }
   }
@@ -83,7 +83,7 @@ export function createMetricsAggregator(): TelemetryOptions & {
       if (Number.isNaN(durationMs) || !Number.isFinite(durationMs)) {
         console.error(
           "[edgar-ts/telemetry:metrics-aggregator] Invalid durationMs:",
-          String(durationMs)
+          String(durationMs),
         )
         return
       }
@@ -107,7 +107,7 @@ export function createMetricsAggregator(): TelemetryOptions & {
     } catch (err) {
       console.error(
         "[edgar-ts/telemetry:metrics-aggregator] Error in onRequestEnd:",
-        (err as Error).message
+        (err as Error).message,
       )
     }
   }
@@ -122,7 +122,7 @@ export function createMetricsAggregator(): TelemetryOptions & {
     } catch (err) {
       console.error(
         "[edgar-ts/telemetry:metrics-aggregator] Error in onRetry:",
-        (err as Error).message
+        (err as Error).message,
       )
     }
   }
@@ -146,10 +146,10 @@ export function createMetricsAggregator(): TelemetryOptions & {
     requestsFailed = 0
     retriesTotal = 0
     rateLimitedRequests = 0
-    Object.keys(requestsFailedByError).forEach(key => {
+    Object.keys(requestsFailedByError).forEach((key) => {
       delete requestsFailedByError[key]
     })
-    Object.keys(latencyByOperation).forEach(key => {
+    Object.keys(latencyByOperation).forEach((key) => {
       delete latencyByOperation[key]
     })
   }

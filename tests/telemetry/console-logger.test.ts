@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { createConsoleLogger } from "@/telemetry/console-logger"
-import type { RequestStartEvent, RequestEndEvent, RetryEvent } from "@/types"
+import type { RequestEndEvent, RequestStartEvent, RetryEvent } from "@/types"
 
 describe("createConsoleLogger", () => {
   let stderrSpy: ReturnType<typeof vi.spyOn>

@@ -1,10 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { EdgarClient } from "@/client"
-import {
-  createConsoleLogger,
-  createMetricsAggregator,
-  createStructuredLogger,
-} from "@/telemetry"
+import { createConsoleLogger, createMetricsAggregator, createStructuredLogger } from "@/telemetry"
 
 describe("Telemetry integration", () => {
   beforeEach(() => {
@@ -17,9 +13,7 @@ describe("Telemetry integration", () => {
   })
 
   it("console logger works with real EdgarClient", async () => {
-    const stderrSpy = vi.spyOn(process.stderr, "write").mockImplementation(
-      () => true
-    )
+    const stderrSpy = vi.spyOn(process.stderr, "write").mockImplementation(() => true)
     const mockFetch = vi.fn(async () =>
       Promise.resolve({
         ok: true,
@@ -45,7 +39,7 @@ describe("Telemetry integration", () => {
             },
           },
         }),
-      } as Response)
+      } as Response),
     )
     global.fetch = mockFetch
 
@@ -95,7 +89,7 @@ describe("Telemetry integration", () => {
             },
           },
         }),
-      } as Response)
+      } as Response),
     )
     global.fetch = mockFetch
 
@@ -119,9 +113,7 @@ describe("Telemetry integration", () => {
 
   it("multiple helpers can be combined", async () => {
     const metrics = createMetricsAggregator()
-    const stdoutSpy = vi.spyOn(process.stdout, "write").mockImplementation(
-      () => true
-    )
+    const stdoutSpy = vi.spyOn(process.stdout, "write").mockImplementation(() => true)
 
     const combined = {
       onRequestStart: (event: RequestStartEvent) => {
@@ -163,7 +155,7 @@ describe("Telemetry integration", () => {
             },
           },
         }),
-      } as Response)
+      } as Response),
     )
     global.fetch = mockFetch
 
@@ -193,9 +185,7 @@ describe("Telemetry integration", () => {
       onRetry: () => {},
     }
 
-    const errorSpy = vi
-      .spyOn(console, "error")
-      .mockImplementation(() => {})
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
     const mockFetch = vi.fn(async () =>
       Promise.resolve({
         ok: true,
@@ -221,7 +211,7 @@ describe("Telemetry integration", () => {
             },
           },
         }),
-      } as Response)
+      } as Response),
     )
     global.fetch = mockFetch
 
@@ -236,7 +226,7 @@ describe("Telemetry integration", () => {
         from: "2021-01-01",
         to: "2021-12-31",
         cik: "0000320193",
-      })
+      }),
     ).resolves.toBeDefined()
 
     errorSpy.mockRestore()

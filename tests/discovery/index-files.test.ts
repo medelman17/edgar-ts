@@ -4,7 +4,6 @@ import { describe, expect, it, vi } from "vitest"
 import { parseIndexFile } from "@/discovery/index-parser"
 import { IndexService } from "@/discovery/index-service"
 import type { SecHttpClient } from "@/http"
-import { ValidationError } from "@/errors"
 
 const SAMPLE_MASTER_IDX = `CIK|Company Name|Form Type|Date Filed|Filename
 ------------------------------------------------------------------------

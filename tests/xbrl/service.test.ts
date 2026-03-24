@@ -1,9 +1,9 @@
 // XBRL API wrapping tests
 
 import { describe, expect, it, vi } from "vitest"
-import { XbrlService } from "@/xbrl/service"
 import { ValidationError } from "@/errors"
 import type { SecHttpClient } from "@/http"
+import { XbrlService } from "@/xbrl/service"
 
 function createMockHttpClient(response: unknown): SecHttpClient {
   return {
@@ -28,7 +28,14 @@ describe("XbrlService", () => {
               description: "Total revenue",
               units: {
                 USD: [
-                  { val: 394328000000, accn: "0000320193-23-000106", fy: 2023, fp: "FY", form: "10-K", filed: "2023-11-03" },
+                  {
+                    val: 394328000000,
+                    accn: "0000320193-23-000106",
+                    fy: 2023,
+                    fp: "FY",
+                    form: "10-K",
+                    filed: "2023-11-03",
+                  },
                 ],
               },
             },
@@ -79,8 +86,26 @@ describe("XbrlService", () => {
         entityName: "Apple Inc.",
         units: {
           USD: [
-            { val: 394328000000, accn: "0000320193-23-000106", fy: 2023, fp: "FY", form: "10-K", filed: "2023-11-03", start: "2022-10-02", end: "2023-09-30" },
-            { val: 365817000000, accn: "0000320193-22-000108", fy: 2022, fp: "FY", form: "10-K", filed: "2022-10-28", start: "2021-09-26", end: "2022-09-24" },
+            {
+              val: 394328000000,
+              accn: "0000320193-23-000106",
+              fy: 2023,
+              fp: "FY",
+              form: "10-K",
+              filed: "2023-11-03",
+              start: "2022-10-02",
+              end: "2023-09-30",
+            },
+            {
+              val: 365817000000,
+              accn: "0000320193-22-000108",
+              fy: 2022,
+              fp: "FY",
+              form: "10-K",
+              filed: "2022-10-28",
+              start: "2021-09-26",
+              end: "2022-09-24",
+            },
           ],
         },
       }
@@ -96,7 +121,12 @@ describe("XbrlService", () => {
     })
 
     it("should fetch the correct concept URL", async () => {
-      const httpClient = createMockHttpClient({ cik: 320193, taxonomy: "us-gaap", tag: "Revenue", units: {} })
+      const httpClient = createMockHttpClient({
+        cik: 320193,
+        taxonomy: "us-gaap",
+        tag: "Revenue",
+        units: {},
+      })
       const service = new XbrlService(httpClient)
 
       await service.getCompanyConcept("320193", "us-gaap", "Revenue")
@@ -118,8 +148,18 @@ describe("XbrlService", () => {
         label: "Revenue",
         pts: 4500,
         data: [
-          { accn: "0000320193-23-000106", cik: 320193, entityName: "Apple Inc.", val: 394328000000 },
-          { accn: "0000789019-23-000100", cik: 789019, entityName: "MICROSOFT CORP", val: 211915000000 },
+          {
+            accn: "0000320193-23-000106",
+            cik: 320193,
+            entityName: "Apple Inc.",
+            val: 394328000000,
+          },
+          {
+            accn: "0000789019-23-000100",
+            cik: 789019,
+            entityName: "MICROSOFT CORP",
+            val: 211915000000,
+          },
         ],
       }
 

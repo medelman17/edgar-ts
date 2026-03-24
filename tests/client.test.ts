@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import { EdgarClient, ConfigurationError } from "@/index"
 import type { SubmissionsResponse } from "@/discovery/types"
+import { ConfigurationError, EdgarClient } from "@/index"
 
 // Mock global fetch
 const mockFetch = vi.fn()
@@ -157,10 +157,18 @@ describe("EdgarClient", () => {
         name: "Apple Inc.",
         filings: {
           recent: {
-            accessionNumber: ["0001193125-24-100001", "0001193125-24-100001", "0001193125-24-100002"],
+            accessionNumber: [
+              "0001193125-24-100001",
+              "0001193125-24-100001",
+              "0001193125-24-100002",
+            ],
             filingDate: ["2024-09-01", "2024-09-01", "2024-03-15"],
             reportDate: ["2024-09-01", "2024-09-01", "2024-03-15"],
-            acceptanceDateTime: ["2024-09-01T16:00:00Z", "2024-09-01T16:00:00Z", "2024-03-15T16:00:00Z"],
+            acceptanceDateTime: [
+              "2024-09-01T16:00:00Z",
+              "2024-09-01T16:00:00Z",
+              "2024-03-15T16:00:00Z",
+            ],
             act: ["34", "34", "34"],
             form: ["8-K", "8-K", "10-Q"],
             fileNumber: ["001-36743", "001-36743", "001-36743"],
@@ -336,7 +344,8 @@ describe("EdgarClient", () => {
         accessionNo: "0001193125-20-123456",
         formType: "10-K",
         filingDate: "2024-01-15",
-        filingUrl: "https://www.sec.gov/cgi-bin/viewer?action=view&cik=0000320193&accession_number=000119312520123456&xbrl_type=v",
+        filingUrl:
+          "https://www.sec.gov/cgi-bin/viewer?action=view&cik=0000320193&accession_number=000119312520123456&xbrl_type=v",
       }
 
       const exhibits = await client.listExhibits(filing)
@@ -348,7 +357,8 @@ describe("EdgarClient", () => {
         type: "EX-10.1",
         description: "Employment Agreement",
         filename: "ex10-1.htm",
-        exhibitUrl: "https://www.sec.gov/Archives/edgar/data/0000320193/000119312520123456/ex10-1.htm",
+        exhibitUrl:
+          "https://www.sec.gov/Archives/edgar/data/0000320193/000119312520123456/ex10-1.htm",
       })
       expect(exhibits[1]).toEqual({
         accessionNo: "0001193125-20-123456",
@@ -356,7 +366,8 @@ describe("EdgarClient", () => {
         type: "EX-23.1",
         description: "Consent of Independent Auditor",
         filename: "ex23-1.htm",
-        exhibitUrl: "https://www.sec.gov/Archives/edgar/data/0000320193/000119312520123456/ex23-1.htm",
+        exhibitUrl:
+          "https://www.sec.gov/Archives/edgar/data/0000320193/000119312520123456/ex23-1.htm",
       })
     })
 
@@ -636,7 +647,8 @@ describe("EdgarClient", () => {
         type: "EX-10.1",
         description: "Employment Agreement",
         filename: "ex10-1.htm",
-        exhibitUrl: "https://www.sec.gov/Archives/edgar/data/0000320193/000119312520123456/ex10-1.htm",
+        exhibitUrl:
+          "https://www.sec.gov/Archives/edgar/data/0000320193/000119312520123456/ex10-1.htm",
       }
 
       const result = await client.downloadExhibit(exhibitRef)
@@ -672,7 +684,8 @@ describe("EdgarClient", () => {
         type: "EX-10.1",
         description: "Employment Agreement",
         filename: "ex10-1.pdf",
-        exhibitUrl: "https://www.sec.gov/Archives/edgar/data/0000320193/000119312520123456/ex10-1.pdf",
+        exhibitUrl:
+          "https://www.sec.gov/Archives/edgar/data/0000320193/000119312520123456/ex10-1.pdf",
       }
 
       const result = await client.downloadExhibit(exhibitRef)
@@ -702,7 +715,8 @@ describe("EdgarClient", () => {
         type: "EX-10.1",
         description: "Employment Agreement",
         filename: "ex10-1.htm",
-        exhibitUrl: "https://www.sec.gov/Archives/edgar/data/0000320193/000119312520123456/ex10-1.htm",
+        exhibitUrl:
+          "https://www.sec.gov/Archives/edgar/data/0000320193/000119312520123456/ex10-1.htm",
       }
 
       const result = await client.downloadExhibit(exhibitRef)
@@ -732,7 +746,8 @@ describe("EdgarClient", () => {
         type: "EX-10.1",
         description: "Employment Agreement",
         filename: "ex10-1.htm",
-        exhibitUrl: "https://www.sec.gov/Archives/edgar/data/0000320193/000119312520123456/ex10-1.htm",
+        exhibitUrl:
+          "https://www.sec.gov/Archives/edgar/data/0000320193/000119312520123456/ex10-1.htm",
       }
 
       const result = await client.downloadExhibit(exhibitRef)
@@ -763,7 +778,8 @@ describe("EdgarClient", () => {
         type: "EX-10.1",
         description: "Employment Agreement",
         filename: "ex10-1.htm",
-        exhibitUrl: "https://www.sec.gov/Archives/edgar/data/0000320193/000119312520123456/ex10-1.htm",
+        exhibitUrl:
+          "https://www.sec.gov/Archives/edgar/data/0000320193/000119312520123456/ex10-1.htm",
       }
 
       const result = await client.downloadExhibit(exhibitRef)
@@ -794,7 +810,8 @@ describe("EdgarClient", () => {
         type: "EX-10.1",
         description: "Employment Agreement",
         filename: "ex10-1.htm",
-        exhibitUrl: "https://www.sec.gov/Archives/edgar/data/0000320193/000119312520123456/ex10-1.htm",
+        exhibitUrl:
+          "https://www.sec.gov/Archives/edgar/data/0000320193/000119312520123456/ex10-1.htm",
       }
 
       const result = await client.downloadExhibit(exhibitRef)
@@ -830,7 +847,8 @@ describe("EdgarClient", () => {
         type: "EX-10.1",
         description: "Employment Agreement",
         filename: "ex10-1.htm",
-        exhibitUrl: "https://www.sec.gov/Archives/edgar/data/0000320193/000119312520123456/ex10-1.htm",
+        exhibitUrl:
+          "https://www.sec.gov/Archives/edgar/data/0000320193/000119312520123456/ex10-1.htm",
       }
 
       await client.downloadExhibit(exhibitRef)

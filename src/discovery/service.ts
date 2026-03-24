@@ -38,16 +38,11 @@ export class DiscoveryService {
       })
     }
 
-    let normalizedCik: string | undefined
-    if (input.cik) {
-      normalizedCik = normalizeCik(input.cik)
-    }
-
     const formTypes = input.formTypes ?? DEFAULT_FORM_TYPES
     const normalizedFormTypes = formTypes.map((form) => normalizeFormType(form))
 
     // CIK-less discovery uses index files
-    if (!normalizedCik) {
+    if (!input.cik) {
       return this.indexService.discoverByIndex({
         from: input.from,
         to: input.to,
@@ -56,7 +51,8 @@ export class DiscoveryService {
     }
 
     // CIK-scoped discovery uses Submissions API
-    const rawFilings = await fetchAllFilings(normalizedCik, this.httpClient, {
+    const cik = normalizeCik(input.cik)
+    const rawFilings = await fetchAllFilings(cik, this.httpClient, {
       operation: "discoverFilings",
       endpointClass: "submissions",
     })
@@ -65,21 +61,20 @@ export class DiscoveryService {
       return filing.filingDate >= input.from && filing.filingDate <= input.to
     })
 
+    const formTypeSet = new Set(normalizedFormTypes)
     const formFiltered = dateFiltered.filter((filing) => {
-      const normalized = normalizeFormType(filing.form)
-      return normalizedFormTypes.includes(normalized)
+      return formTypeSet.has(normalizeFormType(filing.form))
     })
 
     const normalizedFilings = formFiltered.map((filing) => {
       const filingAccession = normalizeAccession(filing.accessionNumber)
-      const filingFormType = normalizeFormType(filing.form)
       const accessionNoCompact = filingAccession.replace(/-/g, "")
-      const filingUrl = `https://www.sec.gov/cgi-bin/viewer?action=view&cik=${normalizedCik}&accession_number=${accessionNoCompact}&xbrl_type=v`
+      const filingUrl = `https://www.sec.gov/cgi-bin/viewer?action=view&cik=${cik}&accession_number=${accessionNoCompact}&xbrl_type=v`
 
       return {
-        cik: normalizedCik as string,
+        cik,
         accessionNo: filingAccession,
-        formType: filingFormType,
+        formType: normalizeFormType(filing.form),
         filingDate: filing.filingDate,
         filingUrl,
       }

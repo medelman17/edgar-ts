@@ -1,10 +1,5 @@
-import { describe, test, expect } from "vitest"
-import {
-  normalizeCik,
-  normalizeAccession,
-  normalizeFormType,
-  validateDate,
-} from "@/discovery"
+import { describe, expect, test } from "vitest"
+import { normalizeAccession, normalizeCik, normalizeFormType, validateDate } from "@/discovery"
 import { ValidationError } from "@/errors"
 
 describe("normalizeCik", () => {

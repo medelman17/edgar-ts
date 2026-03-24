@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest"
 import { createMetricsAggregator } from "@/telemetry/metrics-aggregator"
-import type { RequestStartEvent, RequestEndEvent, RetryEvent } from "@/types"
+import type { RequestEndEvent, RequestStartEvent, RetryEvent } from "@/types"
 
 describe("createMetricsAggregator", () => {
   it("increments requestsTotal on onRequestStart", () => {

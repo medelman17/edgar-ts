@@ -1,7 +1,7 @@
 // SearchService — wrap SEC EFTS full-text search (unofficial/undocumented API)
 
-import { ParseError } from "@/errors"
 import type { SecHttpClient } from "@/http"
+import { fetchJson } from "@/http/fetch-json"
 
 export type SearchQuery = {
   q: string
@@ -53,19 +53,10 @@ export class SearchService {
   async searchFilings(query: SearchQuery): Promise<SearchResult> {
     const url = this.buildUrl(query)
 
-    const response = (await this.httpClient.request(url, {
-      context: { operation: "searchFilings", endpointClass: "efts" },
-    })) as unknown as { json(): Promise<unknown> }
-
-    let data: EftsResponse
-    try {
-      data = (await response.json()) as EftsResponse
-    } catch (error) {
-      throw new ParseError(`Failed to parse EFTS search response from ${url}`, {
-        metadata: { url },
-        cause: error,
-      })
-    }
+    const data = await fetchJson<EftsResponse>(url, this.httpClient, {
+      operation: "searchFilings",
+      endpointClass: "efts",
+    })
 
     return {
       total: data.hits.total.value,
