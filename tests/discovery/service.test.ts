@@ -1,6 +1,6 @@
 // DiscoveryService integration tests
 
-import { ConfigurationError, ValidationError } from "@/errors"
+import { ValidationError } from "@/errors"
 import type { SecHttpClient } from "@/http"
 import { DiscoveryService } from "@/discovery/service"
 import type { FilingRecord, SubmissionsResponse } from "@/discovery/types"
@@ -112,26 +112,32 @@ describe("DiscoveryService", () => {
       }
     })
 
-    it("should throw ConfigurationError when CIK not provided", async () => {
-      const service = new DiscoveryService({} as SecHttpClient)
-
-      await expect(
-        service.discoverFilings({
-          from: "2024-01-01",
-          to: "2024-12-31",
-          // No CIK
-        }),
-      ).rejects.toThrow(ConfigurationError)
-
-      try {
-        await service.discoverFilings({
-          from: "2024-01-01",
-          to: "2024-12-31",
-        })
-      } catch (error) {
-        expect(error).toBeInstanceOf(ConfigurationError)
-        expect((error as ConfigurationError).message).toContain("Daily Index")
+    it("should use index file discovery when CIK not provided", async () => {
+      const indexContent = `CIK|Company Name|Form Type|Date Filed|Filename
+------------------------------------------------------------------------
+320193|Apple Inc.|8-K|2024-09-15|edgar/data/320193/0001193125-24-100001.txt
+`
+      const mockResponse = {
+        ok: true,
+        status: 200,
+        text: async () => indexContent,
       }
+
+      const httpClient = {
+        request: vi.fn().mockResolvedValue(mockResponse),
+      } as unknown as SecHttpClient
+
+      const service = new DiscoveryService(httpClient)
+
+      const result = await service.discoverFilings({
+        from: "2024-07-01",
+        to: "2024-12-31",
+        // No CIK — should use index files
+      })
+
+      expect(result).toHaveLength(1)
+      expect(result[0]?.cik).toBe("0000320193")
+      expect(result[0]?.formType).toBe("8-K")
     })
   })
 
