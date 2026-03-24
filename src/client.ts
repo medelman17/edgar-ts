@@ -1,9 +1,16 @@
-import { ConfigurationError } from "@/errors"
+import type { BulkDownloadResult } from "@/bulk"
+import { BulkDataService } from "@/bulk"
+import { CompanyService } from "@/company"
 import { DiscoveryService } from "@/discovery"
 import { DownloadService } from "@/download"
+import { ConfigurationError } from "@/errors"
 import { ExhibitService } from "@/exhibits"
 import { SecHttpClient } from "@/http"
+import type { SearchQuery, SearchResult } from "@/search"
+import { SearchService } from "@/search"
 import type {
+  CompanyInfo,
+  CompanyTicker,
   DiscoverFilingsInput,
   DownloadedExhibit,
   EdgarClientOptions,
@@ -11,6 +18,8 @@ import type {
   FilingRef,
   RetryOptions,
 } from "@/types"
+import type { CompanyConcept, CompanyFacts, Frame } from "@/xbrl"
+import { XbrlService } from "@/xbrl"
 
 const DEFAULT_MAX_REQUESTS_PER_SECOND = 8
 const DEFAULT_TIMEOUT_MS = 10_000
@@ -25,6 +34,10 @@ export class EdgarClient {
     Pick<EdgarClientOptions, "userAgent" | "maxRequestsPerSecond" | "timeoutMs">
   > & { retries: RetryOptions; telemetry: EdgarClientOptions["telemetry"] }
   private readonly httpClient: SecHttpClient
+  private readonly bulkDataService: BulkDataService
+  private readonly searchService: SearchService
+  private readonly xbrlService: XbrlService
+  private readonly companyService: CompanyService
   private readonly discoveryService: DiscoveryService
   private readonly exhibitService: ExhibitService
   private readonly downloadService: DownloadService
@@ -44,9 +57,21 @@ export class EdgarClient {
 
     // Initialize HTTP client and services
     this.httpClient = new SecHttpClient(this.options)
+    this.bulkDataService = new BulkDataService(this.httpClient)
+    this.companyService = new CompanyService(this.httpClient)
+    this.searchService = new SearchService(this.httpClient)
+    this.xbrlService = new XbrlService(this.httpClient)
     this.discoveryService = new DiscoveryService(this.httpClient)
     this.exhibitService = new ExhibitService(this.httpClient)
     this.downloadService = new DownloadService(this.httpClient)
+  }
+
+  async getCompanyInfo(cik: string): Promise<CompanyInfo> {
+    return this.companyService.getCompanyInfo(cik)
+  }
+
+  async lookupCompany(query: string): Promise<CompanyTicker[]> {
+    return this.companyService.lookupCompany(query)
   }
 
   async discoverFilings(input: DiscoverFilingsInput): Promise<FilingRef[]> {
@@ -63,5 +88,29 @@ export class EdgarClient {
 
   async downloadExhibit(exhibit: ExhibitRef): Promise<DownloadedExhibit> {
     return this.downloadService.downloadExhibit(exhibit)
+  }
+
+  async downloadSubmissionsBulk(): Promise<BulkDownloadResult> {
+    return this.bulkDataService.downloadSubmissionsBulk()
+  }
+
+  async downloadCompanyFactsBulk(): Promise<BulkDownloadResult> {
+    return this.bulkDataService.downloadCompanyFactsBulk()
+  }
+
+  async getCompanyFacts(cik: string): Promise<CompanyFacts> {
+    return this.xbrlService.getCompanyFacts(cik)
+  }
+
+  async getCompanyConcept(cik: string, taxonomy: string, tag: string): Promise<CompanyConcept> {
+    return this.xbrlService.getCompanyConcept(cik, taxonomy, tag)
+  }
+
+  async getFrame(taxonomy: string, tag: string, unit: string, period: string): Promise<Frame> {
+    return this.xbrlService.getFrame(taxonomy, tag, unit, period)
+  }
+
+  async searchFilings(query: SearchQuery): Promise<SearchResult> {
+    return this.searchService.searchFilings(query)
   }
 }

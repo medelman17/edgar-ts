@@ -2,8 +2,9 @@
 
 import { ParseError } from "@/errors"
 import type { SecHttpClient } from "@/http"
+import { fetchSubmissionsResponse } from "./fetch-submissions"
 import { normalizeCik } from "./normalization"
-import type { FilingRecord, ParallelFilingArrays, SubmissionsResponse } from "./types"
+import type { FilingRecord, ParallelFilingArrays } from "./types"
 import { recordsFromParallelArrays } from "./types"
 
 /**
@@ -36,32 +37,18 @@ export async function fetchAllFilings(
   httpClient: SecHttpClient,
   context?: { readonly operation: string; readonly endpointClass: string },
 ): Promise<FilingRecord[]> {
-  // 1. Normalize CIK to 10-digit format (throws ValidationError on invalid input)
   const normalizedCik = normalizeCik(cik)
 
-  // 2. Fetch primary submissions endpoint
-  const primaryUrl = `https://data.sec.gov/submissions/CIK${normalizedCik}.json`
-  const primaryResponse = (await httpClient.request(primaryUrl, { context })) as unknown as {
-    json(): Promise<unknown>
-  }
+  const submissions = await fetchSubmissionsResponse(
+    normalizedCik,
+    httpClient,
+    context ?? { operation: "discoverFilings", endpointClass: "submissions" },
+  )
 
-  // Parse response JSON
-  let submissions: SubmissionsResponse
-  try {
-    submissions = (await primaryResponse.json()) as SubmissionsResponse
-  } catch (error) {
-    throw new ParseError(`Failed to parse submissions JSON from ${primaryUrl}`, {
-      metadata: { url: primaryUrl, cik: normalizedCik },
-      cause: error,
-    })
-  }
-
-  // 3. Collect recent filings (first 1000 or fewer)
-  // SEC returns parallel arrays, not an array of objects
+  // Collect recent filings (first 1000 or fewer)
   const allFilings: FilingRecord[] = recordsFromParallelArrays(submissions.filings.recent)
 
-  // 4. Iterate through paginated files
-  // Paginated files live under data.sec.gov/submissions/ (same host as primary endpoint)
+  // Iterate through paginated files
   const paginatedFiles = submissions.filings.files ?? []
 
   for (const file of paginatedFiles) {
@@ -71,7 +58,6 @@ export async function fetchAllFilings(
       json(): Promise<unknown>
     }
 
-    // Parse paginated response
     let paginatedData: Record<string, unknown>
     try {
       paginatedData = (await paginatedResponse.json()) as Record<string, unknown>
@@ -82,13 +68,11 @@ export async function fetchAllFilings(
       })
     }
 
-    // Paginated files use the same parallel-array format as recent
     const paginatedArrays = paginatedData as unknown as ParallelFilingArrays
     if (paginatedArrays.accessionNumber && Array.isArray(paginatedArrays.accessionNumber)) {
       allFilings.push(...recordsFromParallelArrays(paginatedArrays))
     }
   }
 
-  // 5. Return complete array
   return allFilings
 }

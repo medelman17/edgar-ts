@@ -1,6 +1,6 @@
 # edgar-ts API Contract
 
-**Date:** 2026-02-15  
+**Date:** 2026-03-24
 **Status:** Contract locked for v1
 
 ## Public Surface
@@ -54,13 +54,85 @@ export type DownloadedExhibit = {
   sha256: string;
 };
 
+export type CompanyInfo = {
+  cik: string;
+  name: string;
+  tickers: string[];
+  exchanges: string[];
+  entityType?: string;
+  sic?: string;
+  sicDescription?: string;
+  stateOfIncorporation?: string;
+  fiscalYearEnd?: string;
+};
+
+export type CompanyTicker = {
+  cik: string;
+  ticker: string;
+  name: string;
+  exchange: string;
+};
+
+export type BulkDownloadResult = {
+  bytes: Uint8Array;
+  sizeBytes: number;
+  mimeType?: string;
+  source: "submissions" | "companyfacts";
+};
+
+export type SearchQuery = {
+  q: string;
+  formTypes?: string[];
+  from?: string;
+  to?: string;
+  entity?: string;
+  start?: number;
+};
+
+export type SearchResult = {
+  total: number;
+  hits: SearchHit[];
+};
+
+export type SearchHit = {
+  id: string;
+  entityName: string;
+  fileNumber?: string;
+  formType: string;
+  fileDate: string;
+  fileDescription?: string;
+  periodOfReport?: string;
+  score: number;
+};
+
+// XBRL types — see src/xbrl/service.ts for CompanyFacts, CompanyConcept, Frame
+
 export declare class EdgarClient {
   constructor(options: EdgarClientOptions);
 
+  // Company data
+  getCompanyInfo(cik: string): Promise<CompanyInfo>;
+  lookupCompany(query: string): Promise<CompanyTicker[]>;
+
+  // Filing discovery
   discoverFilings(input: DiscoverFilingsInput): Promise<FilingRef[]>;
+
+  // Exhibits
   listExhibits(filing: FilingRef): Promise<ExhibitRef[]>;
   listContractExhibits(filing: FilingRef): Promise<ExhibitRef[]>;
   downloadExhibit(exhibit: ExhibitRef): Promise<DownloadedExhibit>;
+
+  // Bulk data
+  downloadSubmissionsBulk(): Promise<BulkDownloadResult>;
+  downloadCompanyFactsBulk(): Promise<BulkDownloadResult>;
+
+  // XBRL financials
+  getCompanyFacts(cik: string): Promise<CompanyFacts>;
+  getCompanyConcept(cik: string, taxonomy: string, tag: string): Promise<CompanyConcept>;
+  getFrame(taxonomy: string, tag: string, unit: string, period: string): Promise<Frame>;
+
+  // Full-text search (unofficial EFTS API)
+  searchFilings(query: SearchQuery): Promise<SearchResult>;
 }
 ```
 
@@ -71,11 +143,26 @@ export declare class EdgarClient {
 2. Applies default options when unset.
 3. Throws `ConfigurationError` for invalid options.
 
+## `getCompanyInfo(cik)`
+1. Normalizes CIK to 10-digit zero-padded format.
+2. Fetches SEC Submissions API for company metadata.
+3. Returns `CompanyInfo` with all available fields; optional fields may be undefined.
+4. Throws `ValidationError` for invalid CIK, `NotFoundError` for non-existent CIK.
+
+## `lookupCompany(query)`
+1. Fetches SEC `company_tickers.json` (~2MB, ~13K entries) on each call.
+2. Matches by exact ticker (case-insensitive) first, then by company name substring.
+3. Returns ticker matches before name matches.
+4. Returns empty array for no matches.
+5. No caching — callers should re-use results for multiple lookups.
+
 ## `discoverFilings(input)`
 1. Validates date format and range.
-2. If `formTypes` omitted, applies core default forms.
-3. Returns deduplicated and stable-sorted `FilingRef[]`.
-4. Throws typed errors for validation, transport, and normalization failures.
+2. If `cik` provided: uses SEC Submissions API (per-CIK, includes pagination).
+3. If `cik` omitted: uses SEC quarterly index files (`master.idx`) for broad discovery across all filers.
+4. If `formTypes` omitted, applies core default forms (8-K, 10-K, 10-Q, 20-F, S-1 + amendments).
+5. Returns deduplicated and stable-sorted `FilingRef[]`.
+6. Throws typed errors for validation, transport, and normalization failures.
 
 ## `listExhibits(filing)`
 1. Requires canonical filing identity fields.
@@ -92,6 +179,30 @@ export declare class EdgarClient {
 2. Returns hash and metadata.
 3. Throws non-retryable not-found error for permanent missing objects.
 4. Throws retryable transport errors for transient failures.
+
+## `downloadSubmissionsBulk()` / `downloadCompanyFactsBulk()`
+1. Downloads the SEC nightly bulk archive as raw bytes.
+2. Returns `Uint8Array` — ZIP extraction is the caller's responsibility.
+3. `submissions.zip` is ~2GB; `companyfacts.zip` varies. Callers may need to increase `--max-old-space-size`.
+
+## `getCompanyFacts(cik)`
+1. Returns all XBRL facts across all filings for a company.
+2. Organized by taxonomy (us-gaap, ifrs-full, dei, srt), then by tag, then by unit.
+
+## `getCompanyConcept(cik, taxonomy, tag)`
+1. Returns time-series values for a single XBRL concept (e.g., us-gaap/Revenue).
+2. Organized by unit (USD, shares, etc.) with fiscal year, period, and form metadata.
+
+## `getFrame(taxonomy, tag, unit, period)`
+1. Returns cross-company values for one concept at a point in time.
+2. Period format: `CY{year}` (annual), `CY{year}Q{n}` (quarterly), `CY{year}Q{n}I` (instantaneous).
+
+## `searchFilings(query)`
+1. Wraps SEC EFTS Elasticsearch API (undocumented, may change without notice).
+2. Supports keyword/phrase search, form type filter, date range, entity/CIK filter.
+3. Pagination via `start` parameter (0-indexed offset).
+4. Maximum 10,000 results per query (SEC limitation).
+5. Throws `ParseError` if response format is unrecognizable (API changed).
 
 ## Defaults
 1. `maxRequestsPerSecond`: `8`
@@ -137,27 +248,3 @@ type EdgarErrorShape = {
 1. Deterministic ordering and normalization for same upstream data.
 2. No persistence side effects.
 3. No hidden global mutable state across client instances.
-
-## Example Usage
-
-```ts
-import { EdgarClient } from "edgar-ts";
-
-const client = new EdgarClient({
-  userAgent: "AcmeLegalBot/1.0 (ops@acme.test)",
-});
-
-const filings = await client.discoverFilings({
-  from: "2026-01-01",
-  to: "2026-01-31",
-  cik: "320193",
-});
-
-for (const filing of filings) {
-  const exhibits = await client.listContractExhibits(filing);
-  for (const exhibit of exhibits) {
-    const payload = await client.downloadExhibit(exhibit);
-    // Store payload.bytes and metadata in downstream system.
-  }
-}
-```

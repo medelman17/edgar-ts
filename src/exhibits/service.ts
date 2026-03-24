@@ -4,11 +4,7 @@ import type { SecHttpClient } from "@/http"
 import type { ExhibitRef, FilingRef } from "@/types"
 import { dedupeAndSortExhibits } from "./deduplication"
 import { isContractExhibit } from "./filters/contract"
-import {
-  normalizeDescription,
-  normalizeExhibitType,
-  normalizeSequence,
-} from "./normalization"
+import { normalizeDescription, normalizeExhibitType, normalizeSequence } from "./normalization"
 import { parseExhibitTableFromHtml } from "./parsing"
 
 /**
@@ -63,11 +59,7 @@ export class ExhibitService {
    * buildExhibitUrl("0000320193", "0001193125-20-123456", "ex10-1.htm")
    * // "https://www.sec.gov/Archives/edgar/data/0000320193/000119312520123456/ex10-1.htm"
    */
-  private buildExhibitUrl(
-    cik: string,
-    accessionNo: string,
-    filename: string,
-  ): string {
+  private buildExhibitUrl(cik: string, accessionNo: string, filename: string): string {
     const accessionCompact = accessionNo.replace(/-/g, "")
     return `https://www.sec.gov/Archives/edgar/data/${cik}/${accessionCompact}/${filename}`
   }
@@ -126,11 +118,7 @@ export class ExhibitService {
         type,
         description: normalizeDescription(raw.description),
         filename: raw.filename,
-        exhibitUrl: this.buildExhibitUrl(
-          filing.cik,
-          filing.accessionNo,
-          raw.filename,
-        ),
+        exhibitUrl: this.buildExhibitUrl(filing.cik, filing.accessionNo, raw.filename),
       })
     }
 

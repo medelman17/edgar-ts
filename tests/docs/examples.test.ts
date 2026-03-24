@@ -1,13 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { EdgarClient } from "@/client"
-import type {
-  EdgarClientOptions,
-  FilingRef,
-  ExhibitRef,
-  DownloadedExhibit,
-} from "@/types"
-import { ValidationError, TimeoutError } from "@/errors"
 import type { SubmissionsResponse } from "@/discovery/types"
+import { TimeoutError, ValidationError } from "@/errors"
+import type { DownloadedExhibit, EdgarClientOptions, ExhibitRef, FilingRef } from "@/types"
 
 // Mock global fetch
 const mockFetch = vi.fn()
@@ -195,7 +190,8 @@ describe("README examples", () => {
         accessionNo: "0001193125-26-100001",
         formType: "10-K",
         filingDate: "2026-01-15",
-        filingUrl: "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=10-K&dateb=&owner=exclude&count=40",
+        filingUrl:
+          "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=10-K&dateb=&owner=exclude&count=40",
       }
 
       // listExhibits example from README
@@ -292,7 +288,8 @@ describe("README examples", () => {
         type: "EX-10.1",
         description: "Employment Agreement",
         filename: "ex10-1.htm",
-        exhibitUrl: "https://www.sec.gov/Archives/edgar/data/0000320193/000119312526100001/ex10-1.htm",
+        exhibitUrl:
+          "https://www.sec.gov/Archives/edgar/data/0000320193/000119312526100001/ex10-1.htm",
       }
 
       // downloadExhibit example from README

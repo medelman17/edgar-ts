@@ -1,9 +1,9 @@
 // DownloadService integration tests with mocked SecHttpClient
 
-import { describe, it, expect, vi } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 import { DownloadService } from "@/download/service"
-import type { ExhibitRef } from "@/types"
 import type { SecHttpClient } from "@/http"
+import type { ExhibitRef } from "@/types"
 
 // Helper to create mock SecHttpClient
 function createMockHttpClient(mockResponse: {
@@ -73,7 +73,7 @@ describe("DownloadService", () => {
             operation: "downloadExhibit",
             endpointClass: "archive",
           }),
-        })
+        }),
       )
     })
 
@@ -98,8 +98,7 @@ describe("DownloadService", () => {
       const mockResponse = {
         arrayBuffer: async () => mockData.buffer,
         headers: {
-          get: (name: string) =>
-            name === "Content-Type" ? "text/html; charset=utf-8" : null,
+          get: (name: string) => (name === "Content-Type" ? "text/html; charset=utf-8" : null),
         },
       }
 
@@ -160,9 +159,7 @@ describe("DownloadService", () => {
 
       const result = await service.downloadExhibit(exhibit)
 
-      expect(result.sha256).toBe(
-        "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad",
-      )
+      expect(result.sha256).toBe("ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad")
     })
 
     it("bytes are exact binary from response (no transformation)", async () => {
@@ -221,9 +218,7 @@ describe("DownloadService", () => {
       expect(result.bytes.length).toBe(0)
       expect(result.sizeBytes).toBe(0)
       // Empty input SHA-256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-      expect(result.sha256).toBe(
-        "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      )
+      expect(result.sha256).toBe("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")
     })
 
     it("handles large binary data correctly", async () => {

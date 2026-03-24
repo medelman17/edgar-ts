@@ -1,13 +1,8 @@
 // SecHttpClient integration tests — rate limiting, retry, timeout, telemetry
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import { ConfigurationError, NotFoundError, TimeoutError, TransportError } from "@/errors"
 import { SecHttpClient } from "@/http/client"
-import {
-  ConfigurationError,
-  NotFoundError,
-  TimeoutError,
-  TransportError,
-} from "@/errors"
 import type { RetryEvent } from "@/types"
 
 describe("SecHttpClient", () => {
@@ -37,23 +32,23 @@ describe("SecHttpClient", () => {
     })
 
     it("accepts custom maxRequestsPerSecond", () => {
-      expect(() =>
-        new SecHttpClient({ userAgent: "TestBot/1.0", maxRequestsPerSecond: 5 }),
+      expect(
+        () => new SecHttpClient({ userAgent: "TestBot/1.0", maxRequestsPerSecond: 5 }),
       ).not.toThrow()
     })
 
     it("rejects maxRequestsPerSecond < 1", () => {
-      expect(() =>
-        new SecHttpClient({ userAgent: "TestBot/1.0", maxRequestsPerSecond: 0 }),
+      expect(
+        () => new SecHttpClient({ userAgent: "TestBot/1.0", maxRequestsPerSecond: 0 }),
       ).toThrow(ConfigurationError)
-      expect(() =>
-        new SecHttpClient({ userAgent: "TestBot/1.0", maxRequestsPerSecond: 0 }),
+      expect(
+        () => new SecHttpClient({ userAgent: "TestBot/1.0", maxRequestsPerSecond: 0 }),
       ).toThrow("maxRequestsPerSecond must be 1-10")
     })
 
     it("rejects maxRequestsPerSecond > 10", () => {
-      expect(() =>
-        new SecHttpClient({ userAgent: "TestBot/1.0", maxRequestsPerSecond: 11 }),
+      expect(
+        () => new SecHttpClient({ userAgent: "TestBot/1.0", maxRequestsPerSecond: 11 }),
       ).toThrow(ConfigurationError)
     })
 
@@ -67,17 +62,19 @@ describe("SecHttpClient", () => {
     })
 
     it("rejects retries.maxAttempts < 1", () => {
-      expect(() =>
-        new SecHttpClient({
-          userAgent: "TestBot/1.0",
-          retries: { maxAttempts: 0, baseDelayMs: 250, maxDelayMs: 4000 },
-        }),
+      expect(
+        () =>
+          new SecHttpClient({
+            userAgent: "TestBot/1.0",
+            retries: { maxAttempts: 0, baseDelayMs: 250, maxDelayMs: 4000 },
+          }),
       ).toThrow(ConfigurationError)
-      expect(() =>
-        new SecHttpClient({
-          userAgent: "TestBot/1.0",
-          retries: { maxAttempts: 0, baseDelayMs: 250, maxDelayMs: 4000 },
-        }),
+      expect(
+        () =>
+          new SecHttpClient({
+            userAgent: "TestBot/1.0",
+            retries: { maxAttempts: 0, baseDelayMs: 250, maxDelayMs: 4000 },
+          }),
       ).toThrow("retries.maxAttempts must be >= 1")
     })
   })

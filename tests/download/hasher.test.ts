@@ -1,7 +1,7 @@
 // NIST FIPS 180-4 test vectors for SHA-256
 // Reference: https://csrc.nist.gov/projects/cryptographic-standards-and-guidelines/example-values
 
-import { describe, it, expect } from "vitest"
+import { describe, expect, it } from "vitest"
 import { computeSha256Hex } from "@/download/hasher"
 
 describe("computeSha256Hex", () => {

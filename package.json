@@ -41,7 +41,8 @@
     "format": "biome format --write src tests",
     "check": "biome check src tests",
     "size": "size-limit",
-    "changeset": "changeset"
+    "changeset": "changeset",
+    "example": "pnpm build && node examples/basic-usage.mjs"
   },
   "repository": {
     "type": "git",

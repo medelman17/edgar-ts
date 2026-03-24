@@ -1,0 +1,1 @@
+export { CompanyService } from "./service"

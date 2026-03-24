@@ -1,17 +1,20 @@
 // SecHttpClient — orchestrates rate limiting, timeout, retry, error classification, and telemetry
 
-import { ConfigurationError, TimeoutError, TransportError } from "@/errors"
 import type { EdgarError } from "@/errors"
+import { ConfigurationError, TimeoutError, TransportError } from "@/errors"
 import type { EdgarClientOptions } from "@/types"
-import { TokenBucket } from "./limiter"
-import { combineSignals } from "./timeout"
-import { calculateBackoffMs } from "./retry"
 import { classifyResponseError } from "./error-mapper"
+import { TokenBucket } from "./limiter"
+import { calculateBackoffMs } from "./retry"
 import { getRuntime } from "./runtime"
+import { combineSignals } from "./timeout"
 
 // Web-standard APIs available globally in Node 18+ and Bun
 declare const setTimeout: (callback: () => void, ms: number) => unknown
-declare const fetch: (url: string, init?: { signal?: AbortSignal; headers?: Headers }) => Promise<HttpResponse>
+declare const fetch: (
+  url: string,
+  init?: { signal?: AbortSignal; headers?: Headers },
+) => Promise<HttpResponse>
 declare class Headers {
   constructor(init?: Record<string, string>)
   has(name: string): boolean
@@ -91,9 +94,7 @@ export class SecHttpClient {
     // Initialize rate limiter
     const maxRequestsPerSecond = options.maxRequestsPerSecond ?? DEFAULT_MAX_REQUESTS_PER_SECOND
     if (maxRequestsPerSecond < 1 || maxRequestsPerSecond > 10) {
-      throw new ConfigurationError(
-        `maxRequestsPerSecond must be 1-10, got ${maxRequestsPerSecond}`,
-      )
+      throw new ConfigurationError(`maxRequestsPerSecond must be 1-10, got ${maxRequestsPerSecond}`)
     }
     this.limiter = new TokenBucket(maxRequestsPerSecond)
 
@@ -146,10 +147,11 @@ export class SecHttpClient {
     let attempt = 0
     while (attempt < this.retries.maxAttempts) {
       // Generate unique requestId for each HTTP attempt
-      const requestId = (globalThis as unknown as { crypto: { randomUUID: () => string } }).crypto.randomUUID()
+      const requestId = (
+        globalThis as unknown as { crypto: { randomUUID: () => string } }
+      ).crypto.randomUUID()
 
       try {
-
         // 1. Acquire rate limiter token
         await this.limiter.acquire(1)
 
@@ -224,11 +226,9 @@ export class SecHttpClient {
         const typedError: EdgarError =
           error instanceof Error && "retryable" in error && typeof error.retryable === "boolean"
             ? (error as EdgarError)
-            : new TransportError(
-                error instanceof Error ? error.message : String(error),
-                true,
-                { cause: error },
-              )
+            : new TransportError(error instanceof Error ? error.message : String(error), true, {
+                cause: error,
+              })
 
         // If non-retryable or last attempt: throw immediately
         if (!typedError.retryable || attempt === this.retries.maxAttempts - 1) {

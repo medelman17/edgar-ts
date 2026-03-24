@@ -1,6 +1,6 @@
 // ExhibitService integration tests
 
-import { describe, it, expect, beforeEach, vi } from "vitest"
+import { beforeEach, describe, expect, it, vi } from "vitest"
 import { ExhibitService } from "@/exhibits/service"
 import type { SecHttpClient } from "@/http"
 import type { FilingRef } from "@/types"
@@ -61,7 +61,8 @@ const mockFiling: FilingRef = {
   accessionNo: "0001193125-20-123456",
   formType: "10-K",
   filingDate: "2024-01-15",
-  filingUrl: "https://www.sec.gov/cgi-bin/viewer?action=view&cik=0000320193&accession_number=000119312520123456&xbrl_type=v",
+  filingUrl:
+    "https://www.sec.gov/cgi-bin/viewer?action=view&cik=0000320193&accession_number=000119312520123456&xbrl_type=v",
 }
 
 describe("ExhibitService", () => {
@@ -111,9 +112,7 @@ describe("ExhibitService", () => {
         filingUrl: "https://example.com",
       }
 
-      const html = buildMockFilingIndexHtml([
-        buildExhibitRow("1", "Test", "test.htm", "EX-99.1"),
-      ])
+      const html = buildMockFilingIndexHtml([buildExhibitRow("1", "Test", "test.htm", "EX-99.1")])
       httpClient.mockRequest.mockResolvedValue({
         text: async () => html,
       } as Response)

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import { EdgarClient, ConfigurationError } from "@/index"
 import type { SubmissionsResponse } from "@/discovery/types"
+import { ConfigurationError, EdgarClient } from "@/index"
 
 // Mock global fetch
 const mockFetch = vi.fn()
@@ -157,10 +157,18 @@ describe("EdgarClient", () => {
         name: "Apple Inc.",
         filings: {
           recent: {
-            accessionNumber: ["0001193125-24-100001", "0001193125-24-100001", "0001193125-24-100002"],
+            accessionNumber: [
+              "0001193125-24-100001",
+              "0001193125-24-100001",
+              "0001193125-24-100002",
+            ],
             filingDate: ["2024-09-01", "2024-09-01", "2024-03-15"],
             reportDate: ["2024-09-01", "2024-09-01", "2024-03-15"],
-            acceptanceDateTime: ["2024-09-01T16:00:00Z", "2024-09-01T16:00:00Z", "2024-03-15T16:00:00Z"],
+            acceptanceDateTime: [
+              "2024-09-01T16:00:00Z",
+              "2024-09-01T16:00:00Z",
+              "2024-03-15T16:00:00Z",
+            ],
             act: ["34", "34", "34"],
             form: ["8-K", "8-K", "10-Q"],
             fileNumber: ["001-36743", "001-36743", "001-36743"],
@@ -242,6 +250,188 @@ describe("EdgarClient", () => {
     })
   })
 
+  describe("getCompanyInfo", () => {
+    it("returns company metadata for a valid CIK", async () => {
+      const mockResponse = {
+        cik: "0000320193",
+        name: "Apple Inc.",
+        tickers: ["AAPL"],
+        exchanges: ["Nasdaq"],
+        entityType: "operating",
+        sic: "3571",
+        sicDescription: "Electronic Computers",
+        stateOfIncorporation: "CA",
+        fiscalYearEnd: "0930",
+        filings: {
+          recent: {
+            accessionNumber: [],
+            filingDate: [],
+            reportDate: [],
+            acceptanceDateTime: [],
+            act: [],
+            form: [],
+            fileNumber: [],
+            primaryDocument: [],
+            primaryDocDescription: [],
+            size: [],
+            isXBRL: [],
+            isInlineXBRL: [],
+          },
+          files: [],
+        },
+      }
+
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => mockResponse,
+      })
+
+      const client = new EdgarClient({
+        userAgent: "TestBot/1.0 (test@example.com)",
+      })
+
+      const info = await client.getCompanyInfo("320193")
+
+      expect(info.cik).toBe("0000320193")
+      expect(info.name).toBe("Apple Inc.")
+      expect(info.tickers).toEqual(["AAPL"])
+      expect(info.exchanges).toEqual(["Nasdaq"])
+      expect(info.sic).toBe("3571")
+      expect(info.stateOfIncorporation).toBe("CA")
+    })
+  })
+
+  describe("lookupCompany", () => {
+    it("resolves a ticker to company info", async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          fields: ["cik", "name", "ticker", "exchange"],
+          data: [[320193, "Apple Inc.", "AAPL", "Nasdaq"]],
+        }),
+      })
+
+      const client = new EdgarClient({ userAgent: "TestBot/1.0 (test@example.com)" })
+      const results = await client.lookupCompany("AAPL")
+
+      expect(results).toHaveLength(1)
+      expect(results[0]?.cik).toBe("0000320193")
+    })
+  })
+
+  describe("downloadSubmissionsBulk", () => {
+    it("returns bulk download result", async () => {
+      const data = new TextEncoder().encode("fake-zip")
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        arrayBuffer: async () => data.buffer,
+        headers: { get: (n: string) => (n === "Content-Type" ? "application/zip" : null) },
+      })
+
+      const client = new EdgarClient({ userAgent: "TestBot/1.0 (test@example.com)" })
+      const result = await client.downloadSubmissionsBulk()
+
+      expect(result.source).toBe("submissions")
+      expect(result.bytes).toBeInstanceOf(Uint8Array)
+    })
+  })
+
+  describe("downloadCompanyFactsBulk", () => {
+    it("returns bulk download result", async () => {
+      const data = new TextEncoder().encode("fake-zip")
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        arrayBuffer: async () => data.buffer,
+        headers: { get: (n: string) => (n === "Content-Type" ? "application/zip" : null) },
+      })
+
+      const client = new EdgarClient({ userAgent: "TestBot/1.0 (test@example.com)" })
+      const result = await client.downloadCompanyFactsBulk()
+
+      expect(result.source).toBe("companyfacts")
+    })
+  })
+
+  describe("getCompanyFacts", () => {
+    it("returns XBRL facts for a CIK", async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({ cik: 320193, entityName: "Apple Inc.", facts: {} }),
+      })
+
+      const client = new EdgarClient({ userAgent: "TestBot/1.0 (test@example.com)" })
+      const result = await client.getCompanyFacts("320193")
+
+      expect(result.entityName).toBe("Apple Inc.")
+    })
+  })
+
+  describe("getCompanyConcept", () => {
+    it("returns concept time series", async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({ cik: 320193, taxonomy: "us-gaap", tag: "Revenue", units: { USD: [] } }),
+      })
+
+      const client = new EdgarClient({ userAgent: "TestBot/1.0 (test@example.com)" })
+      const result = await client.getCompanyConcept("320193", "us-gaap", "Revenue")
+
+      expect(result.tag).toBe("Revenue")
+    })
+  })
+
+  describe("getFrame", () => {
+    it("returns cross-company frame data", async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({ taxonomy: "us-gaap", tag: "Revenue", data: [] }),
+      })
+
+      const client = new EdgarClient({ userAgent: "TestBot/1.0 (test@example.com)" })
+      const result = await client.getFrame("us-gaap", "Revenue", "USD", "CY2024")
+
+      expect(result.taxonomy).toBe("us-gaap")
+    })
+  })
+
+  describe("searchFilings", () => {
+    it("returns search results", async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          hits: {
+            total: { value: 1 },
+            hits: [
+              {
+                _id: "test",
+                _score: 10,
+                _source: {
+                  display_names: ["Apple Inc."],
+                  form: "10-K",
+                  file_date: "2024-01-15",
+                },
+              },
+            ],
+          },
+        }),
+      })
+
+      const client = new EdgarClient({ userAgent: "TestBot/1.0 (test@example.com)" })
+      const result = await client.searchFilings({ q: "test" })
+
+      expect(result.total).toBe(1)
+      expect(result.hits[0]?.formType).toBe("10-K")
+    })
+  })
+
   describe("listExhibits", () => {
     it("lists all exhibits for a filing with count and field verification", async () => {
       const mockIndexHtml = `
@@ -284,7 +474,8 @@ describe("EdgarClient", () => {
         accessionNo: "0001193125-20-123456",
         formType: "10-K",
         filingDate: "2024-01-15",
-        filingUrl: "https://www.sec.gov/cgi-bin/viewer?action=view&cik=0000320193&accession_number=000119312520123456&xbrl_type=v",
+        filingUrl:
+          "https://www.sec.gov/cgi-bin/viewer?action=view&cik=0000320193&accession_number=000119312520123456&xbrl_type=v",
       }
 
       const exhibits = await client.listExhibits(filing)
@@ -296,7 +487,8 @@ describe("EdgarClient", () => {
         type: "EX-10.1",
         description: "Employment Agreement",
         filename: "ex10-1.htm",
-        exhibitUrl: "https://www.sec.gov/Archives/edgar/data/0000320193/000119312520123456/ex10-1.htm",
+        exhibitUrl:
+          "https://www.sec.gov/Archives/edgar/data/0000320193/000119312520123456/ex10-1.htm",
       })
       expect(exhibits[1]).toEqual({
         accessionNo: "0001193125-20-123456",
@@ -304,7 +496,8 @@ describe("EdgarClient", () => {
         type: "EX-23.1",
         description: "Consent of Independent Auditor",
         filename: "ex23-1.htm",
-        exhibitUrl: "https://www.sec.gov/Archives/edgar/data/0000320193/000119312520123456/ex23-1.htm",
+        exhibitUrl:
+          "https://www.sec.gov/Archives/edgar/data/0000320193/000119312520123456/ex23-1.htm",
       })
     })
 
@@ -584,7 +777,8 @@ describe("EdgarClient", () => {
         type: "EX-10.1",
         description: "Employment Agreement",
         filename: "ex10-1.htm",
-        exhibitUrl: "https://www.sec.gov/Archives/edgar/data/0000320193/000119312520123456/ex10-1.htm",
+        exhibitUrl:
+          "https://www.sec.gov/Archives/edgar/data/0000320193/000119312520123456/ex10-1.htm",
       }
 
       const result = await client.downloadExhibit(exhibitRef)
@@ -620,7 +814,8 @@ describe("EdgarClient", () => {
         type: "EX-10.1",
         description: "Employment Agreement",
         filename: "ex10-1.pdf",
-        exhibitUrl: "https://www.sec.gov/Archives/edgar/data/0000320193/000119312520123456/ex10-1.pdf",
+        exhibitUrl:
+          "https://www.sec.gov/Archives/edgar/data/0000320193/000119312520123456/ex10-1.pdf",
       }
 
       const result = await client.downloadExhibit(exhibitRef)
@@ -650,7 +845,8 @@ describe("EdgarClient", () => {
         type: "EX-10.1",
         description: "Employment Agreement",
         filename: "ex10-1.htm",
-        exhibitUrl: "https://www.sec.gov/Archives/edgar/data/0000320193/000119312520123456/ex10-1.htm",
+        exhibitUrl:
+          "https://www.sec.gov/Archives/edgar/data/0000320193/000119312520123456/ex10-1.htm",
       }
 
       const result = await client.downloadExhibit(exhibitRef)
@@ -680,7 +876,8 @@ describe("EdgarClient", () => {
         type: "EX-10.1",
         description: "Employment Agreement",
         filename: "ex10-1.htm",
-        exhibitUrl: "https://www.sec.gov/Archives/edgar/data/0000320193/000119312520123456/ex10-1.htm",
+        exhibitUrl:
+          "https://www.sec.gov/Archives/edgar/data/0000320193/000119312520123456/ex10-1.htm",
       }
 
       const result = await client.downloadExhibit(exhibitRef)
@@ -711,7 +908,8 @@ describe("EdgarClient", () => {
         type: "EX-10.1",
         description: "Employment Agreement",
         filename: "ex10-1.htm",
-        exhibitUrl: "https://www.sec.gov/Archives/edgar/data/0000320193/000119312520123456/ex10-1.htm",
+        exhibitUrl:
+          "https://www.sec.gov/Archives/edgar/data/0000320193/000119312520123456/ex10-1.htm",
       }
 
       const result = await client.downloadExhibit(exhibitRef)
@@ -742,7 +940,8 @@ describe("EdgarClient", () => {
         type: "EX-10.1",
         description: "Employment Agreement",
         filename: "ex10-1.htm",
-        exhibitUrl: "https://www.sec.gov/Archives/edgar/data/0000320193/000119312520123456/ex10-1.htm",
+        exhibitUrl:
+          "https://www.sec.gov/Archives/edgar/data/0000320193/000119312520123456/ex10-1.htm",
       }
 
       const result = await client.downloadExhibit(exhibitRef)
@@ -778,7 +977,8 @@ describe("EdgarClient", () => {
         type: "EX-10.1",
         description: "Employment Agreement",
         filename: "ex10-1.htm",
-        exhibitUrl: "https://www.sec.gov/Archives/edgar/data/0000320193/000119312520123456/ex10-1.htm",
+        exhibitUrl:
+          "https://www.sec.gov/Archives/edgar/data/0000320193/000119312520123456/ex10-1.htm",
       }
 
       await client.downloadExhibit(exhibitRef)

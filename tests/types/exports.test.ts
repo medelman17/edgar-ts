@@ -1,15 +1,15 @@
 import { describe, expect, it } from "vitest"
 import type {
+  DiscoverFilingsInput,
+  DownloadedExhibit,
   EdgarClientOptions,
+  ExhibitRef,
+  FilingRef,
+  RequestEndEvent,
+  RequestStartEvent,
+  RetryEvent,
   RetryOptions,
   TelemetryOptions,
-  RequestStartEvent,
-  RequestEndEvent,
-  RetryEvent,
-  DiscoverFilingsInput,
-  FilingRef,
-  ExhibitRef,
-  DownloadedExhibit,
 } from "@/types"
 
 describe("Type exports", () => {
@@ -179,7 +179,8 @@ describe("Type exports", () => {
         accessionNo: "0001193125-24-123456",
         formType: "10-K",
         filingDate: "2024-01-15",
-        filingUrl: "https://www.sec.gov/cgi-bin/viewer?action=view&cik=320193&accession_number=0001193125-24-123456",
+        filingUrl:
+          "https://www.sec.gov/cgi-bin/viewer?action=view&cik=320193&accession_number=0001193125-24-123456",
       }
       expect(filing.cik).toBe("0000320193")
       expect(filing.accessionNo).toBe("0001193125-24-123456")

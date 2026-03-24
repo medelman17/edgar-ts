@@ -197,7 +197,7 @@ describe("parseExhibitTableFromHtml", () => {
 
       const exhibits = parseExhibitTableFromHtml(html)
 
-      expect(exhibits[0].description).toBe('"Special" Terms \'Agreement\'')
+      expect(exhibits[0].description).toBe("\"Special\" Terms 'Agreement'")
     })
 
     it("decodes &nbsp; to space", () => {

@@ -83,8 +83,7 @@ describe("calculateBackoffMs", () => {
 
       // Check variance: uniform distribution should have variance
       const mean = delays.reduce((sum, d) => sum + d, 0) / delays.length
-      const variance =
-        delays.reduce((sum, d) => sum + (d - mean) ** 2, 0) / delays.length
+      const variance = delays.reduce((sum, d) => sum + (d - mean) ** 2, 0) / delays.length
 
       // For uniform distribution in [0, 250), variance ≈ (250^2) / 12 ≈ 5208
       // We expect variance > 1000 to ensure non-convergence
@@ -100,8 +99,7 @@ describe("calculateBackoffMs", () => {
 
       // Check variance
       const mean = delays.reduce((sum, d) => sum + d, 0) / delays.length
-      const variance =
-        delays.reduce((sum, d) => sum + (d - mean) ** 2, 0) / delays.length
+      const variance = delays.reduce((sum, d) => sum + (d - mean) ** 2, 0) / delays.length
 
       // For uniform distribution in [0, 1000), variance ≈ (1000^2) / 12 ≈ 83333
       // We expect variance > 10000
@@ -118,8 +116,7 @@ describe("calculateBackoffMs", () => {
 
       // Check variance
       const mean = delays.reduce((sum, d) => sum + d, 0) / delays.length
-      const variance =
-        delays.reduce((sum, d) => sum + (d - mean) ** 2, 0) / delays.length
+      const variance = delays.reduce((sum, d) => sum + (d - mean) ** 2, 0) / delays.length
 
       // For uniform distribution in [0, 4000), variance ≈ (4000^2) / 12 ≈ 1333333
       // We expect variance > 100000

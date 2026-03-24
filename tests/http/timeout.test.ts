@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import { combineSignals, fetchWithTimeoutAndAbort } from "@/http/timeout"
 import { TimeoutError, TransportError } from "@/errors"
+import { combineSignals, fetchWithTimeoutAndAbort } from "@/http/timeout"
 
 describe("combineSignals", () => {
   it("returns new signal when no inputs are aborted", () => {

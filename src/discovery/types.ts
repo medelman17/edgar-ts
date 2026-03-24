@@ -62,6 +62,10 @@ export type SubmissionsResponse = {
   sicDescription?: string
   /** Fiscal year end (MMDD format) */
   fiscalYearEnd?: string
+  /** Stock exchanges */
+  exchanges?: string[]
+  /** State of incorporation */
+  stateOfIncorporation?: string
   /** Filings collection */
   filings: {
     /** Most recent filings as parallel arrays (up to 1000 entries per array) */

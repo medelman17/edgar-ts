@@ -29,9 +29,7 @@ export function calculateBackoffMs(attempt: number, policy: RetryOptions): numbe
   }
 
   if (attempt >= policy.maxAttempts) {
-    throw new Error(
-      `Invalid attempt: ${attempt} (must be < maxAttempts=${policy.maxAttempts})`,
-    )
+    throw new Error(`Invalid attempt: ${attempt} (must be < maxAttempts=${policy.maxAttempts})`)
   }
 
   // Calculate exponential cap: baseDelayMs * 2^attempt

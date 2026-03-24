@@ -4,10 +4,7 @@ import { TimeoutError, TransportError } from "@/errors"
 
 // Web-standard APIs available globally in Node 18+ and Bun
 declare const setTimeout: (callback: () => void, ms: number) => unknown
-declare const fetch: (
-  url: string,
-  init?: { signal?: AbortSignal },
-) => Promise<Response>
+declare const fetch: (url: string, init?: { signal?: AbortSignal }) => Promise<Response>
 declare class AbortController {
   signal: AbortSignal
   abort(reason?: unknown): void

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { createStructuredLogger } from "@/telemetry/structured-logger"
-import type { RequestStartEvent, RequestEndEvent, RetryEvent } from "@/types"
+import type { RequestEndEvent, RequestStartEvent, RetryEvent } from "@/types"
 
 describe("createStructuredLogger", () => {
   let stdoutSpy: ReturnType<typeof vi.spyOn>

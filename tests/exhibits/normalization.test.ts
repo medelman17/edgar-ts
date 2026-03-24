@@ -3,9 +3,9 @@
 import { describe, expect, it } from "vitest"
 import { ValidationError } from "@/errors"
 import {
-  normalizeSequence,
-  normalizeExhibitType,
   normalizeDescription,
+  normalizeExhibitType,
+  normalizeSequence,
 } from "@/exhibits/normalization"
 
 describe("normalizeSequence", () => {
