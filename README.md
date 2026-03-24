@@ -1,6 +1,6 @@
 # edgar-ts
 
-TypeScript SEC EDGAR client for filing discovery and contract exhibit acquisition.
+TypeScript SEC EDGAR client for filing discovery, company data, XBRL financials, and full-text search.
 
 [![npm version](https://badge.fury.io/js/edgar-ts.svg)](https://www.npmjs.com/package/edgar-ts)
 [![CI](https://github.com/medelman17/edgar-ts/actions/workflows/ci.yml/badge.svg)](https://github.com/medelman17/edgar-ts/actions/workflows/ci.yml)
@@ -23,9 +23,15 @@ yarn add edgar-ts
 ## Features
 
 - **Filing discovery** — Date-bounded search with optional CIK and form-type filtering
+- **Index file discovery** — Bulk discovery across all filers via SEC quarterly index files
+- **Company metadata** — Name, tickers, SIC code, entity type, state of incorporation
+- **Ticker/name lookup** — Resolve tickers or company names to CIKs
 - **Exhibit enumeration** — Normalized exhibit metadata from filing indices
 - **Contract filtering** — Built-in `EX-10*` contract exhibit isolation
 - **Raw download** — Exhibit bytes with MIME hints and SHA-256 integrity hash
+- **Bulk data** — Download SEC nightly archives (submissions.zip, companyfacts.zip)
+- **XBRL financials** — Company Facts, Company Concept, and Frames API access
+- **Full-text search** — Keyword search across all SEC filings via EFTS
 - **SEC-compliant** — Mandatory user-agent, rate limiting (8 req/s default), bounded retries
 - **Deterministic** — Canonical normalization, stable sort, deduplication
 - **Zero dependencies** — No runtime dependencies
@@ -40,14 +46,29 @@ const client = new EdgarClient({
   userAgent: "AcmeLegalBot/1.0 (ops@acme.test)",
 })
 
-// Discover filings in a date range
+// Look up a company by ticker
+const matches = await client.lookupCompany("AAPL")
+const { cik } = matches[0] // "0000320193"
+
+// Get company metadata
+const company = await client.getCompanyInfo(cik)
+console.log(company.name, company.sic, company.tickers)
+
+// Discover filings for a specific company
 const filings = await client.discoverFilings({
+  cik,
   from: "2026-01-01",
-  to: "2026-01-31",
-  cik: "320193", // optional: scope to specific issuer
+  to: "2026-12-31",
 })
 
-// Get contract exhibits (EX-10*) for each filing
+// Or discover across ALL filers (uses quarterly index files)
+const allFilings = await client.discoverFilings({
+  from: "2026-01-01",
+  to: "2026-03-31",
+  formTypes: ["10-K"],
+})
+
+// Get contract exhibits (EX-10*) for a filing
 for (const filing of filings) {
   const exhibits = await client.listContractExhibits(filing)
   for (const exhibit of exhibits) {
@@ -71,58 +92,135 @@ for (const filing of filings) {
 
 ### Methods
 
+#### Company Data
+
 | Method | Returns | Description |
 |--------|---------|-------------|
-| `discoverFilings(input)` | `Promise<FilingRef[]>` | Date-bounded filing discovery |
+| `getCompanyInfo(cik)` | `Promise<CompanyInfo>` | Company metadata (name, tickers, SIC, entity type, etc.) |
+| `lookupCompany(query)` | `Promise<CompanyTicker[]>` | Search by ticker (exact) or company name (substring) |
+
+#### Filing Discovery
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `discoverFilings(input)` | `Promise<FilingRef[]>` | Date-bounded filing discovery. With CIK: uses Submissions API. Without CIK: uses quarterly index files. |
+
+#### Exhibits
+
+| Method | Returns | Description |
+|--------|---------|-------------|
 | `listExhibits(filing)` | `Promise<ExhibitRef[]>` | All exhibits for a filing |
 | `listContractExhibits(filing)` | `Promise<ExhibitRef[]>` | Contract exhibits only (EX-10*) |
 | `downloadExhibit(exhibit)` | `Promise<DownloadedExhibit>` | Raw bytes + metadata + SHA-256 |
 
+#### Bulk Data
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `downloadSubmissionsBulk()` | `Promise<BulkDownloadResult>` | Download SEC nightly submissions.zip (~2GB) |
+| `downloadCompanyFactsBulk()` | `Promise<BulkDownloadResult>` | Download SEC nightly companyfacts.zip |
+
+#### XBRL Financials
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `getCompanyFacts(cik)` | `Promise<CompanyFacts>` | All XBRL facts across all filings |
+| `getCompanyConcept(cik, taxonomy, tag)` | `Promise<CompanyConcept>` | Single concept time series (e.g., us-gaap/Revenue) |
+| `getFrame(taxonomy, tag, unit, period)` | `Promise<Frame>` | Cross-company comparison at a point in time |
+
+#### Full-Text Search
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `searchFilings(query)` | `Promise<SearchResult>` | Keyword search with form type, date, and entity filters |
+
+> **Note:** `searchFilings` wraps the SEC's EFTS Elasticsearch API, which is undocumented and could change without notice.
+
 ### Examples
 
-#### `discoverFilings(input)`
+#### Company lookup and metadata
 
 ```typescript
-// Basic date range query (requires CIK)
+// Find a company by ticker
+const results = await client.lookupCompany("MSFT")
+// [{ cik: "0000789019", ticker: "MSFT", name: "MICROSOFT CORP", exchange: "Nasdaq" }]
+
+// Get full company metadata
+const info = await client.getCompanyInfo("789019")
+// { cik: "0000789019", name: "MICROSOFT CORP", tickers: ["MSFT"], sic: "7372", ... }
+```
+
+#### Filing discovery
+
+```typescript
+// Discover filings for a specific company
 const filings = await client.discoverFilings({
   cik: "320193",
   from: "2026-01-01",
-  to: "2026-01-31",
+  to: "2026-12-31",
 })
 
-// Custom form types
-const customFilings = await client.discoverFilings({
+// Discover across all filers (no CIK — uses index files)
+const allFilings = await client.discoverFilings({
+  from: "2026-01-01",
+  to: "2026-03-31",
+  formTypes: ["10-K", "10-Q"],
+})
+
+// Custom form types for a specific company
+const proxyFilings = await client.discoverFilings({
   cik: "320193",
   from: "2026-01-01",
-  to: "2026-01-31",
-  formTypes: ["8-K"],
+  to: "2026-12-31",
+  formTypes: ["DEF 14A"],
 })
 ```
 
-#### `listExhibits(filing)`
+#### XBRL financial data
+
+```typescript
+// Get all XBRL facts for Apple
+const facts = await client.getCompanyFacts("320193")
+
+// Get Revenue time series
+const revenue = await client.getCompanyConcept("320193", "us-gaap", "Revenue")
+for (const val of revenue.units.USD) {
+  console.log(`FY${val.fy}: $${val.val}`)
+}
+
+// Compare Revenue across all companies for Q1 2024
+const frame = await client.getFrame("us-gaap", "Revenue", "USD", "CY2024Q1")
+console.log(`${frame.data.length} companies reported Revenue`)
+```
+
+#### Full-text search
+
+```typescript
+// Search for filings mentioning "non-compete"
+const results = await client.searchFilings({
+  q: "non-compete agreement",
+  formTypes: ["10-K", "8-K"],
+  from: "2024-01-01",
+  to: "2024-12-31",
+})
+
+console.log(`${results.total} filings found`)
+for (const hit of results.hits) {
+  console.log(`${hit.entityName} — ${hit.formType} (${hit.fileDate})`)
+}
+```
+
+#### Exhibits and downloads
 
 ```typescript
 const filing = filings[0]
 const exhibits = await client.listExhibits(filing)
-// Returns all exhibits with: sequence, type, description, filename, url
-```
+const contracts = await client.listContractExhibits(filing)
 
-#### `listContractExhibits(filing)`
-
-```typescript
-const contractExhibits = await client.listContractExhibits(filing)
-// Returns only EX-10* exhibits (contracts)
-```
-
-#### `downloadExhibit(exhibit)`
-
-```typescript
-const exhibit = contractExhibits[0]
-const downloaded = await client.downloadExhibit(exhibit)
+const downloaded = await client.downloadExhibit(contracts[0])
 console.log(`Downloaded ${downloaded.sizeBytes} bytes`)
 console.log(`SHA-256: ${downloaded.sha256}`)
 console.log(`MIME type: ${downloaded.mimeType || "unknown"}`)
-// downloaded.bytes is Uint8Array of raw exhibit content
 ```
 
 ### Type Exports
@@ -133,6 +231,8 @@ import type {
   FilingRef,
   ExhibitRef,
   DownloadedExhibit,
+  CompanyInfo,
+  CompanyTicker,
 } from "edgar-ts"
 ```
 
@@ -239,8 +339,8 @@ const client = new EdgarClient({
 
 **Telemetry Event Fields:**
 - `requestId` - Unique ID for request correlation
-- `operation` - EdgarClient method (discoverFilings, listExhibits, etc.)
-- `endpointClass` - SEC endpoint type (submissions, archive, data)
+- `operation` - EdgarClient method (discoverFilings, listExhibits, getCompanyInfo, searchFilings, etc.)
+- `endpointClass` - SEC endpoint type (submissions, archive, full-index, xbrl, efts, files, bulk-data)
 - `runtime` - Detected runtime (node or bun)
 - `timestamp` - Event timestamp (milliseconds)
 - `url`, `method`, `statusCode`, `durationMs` - Request details
