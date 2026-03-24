@@ -6,6 +6,7 @@ import { ExhibitService } from "@/exhibits"
 import { SecHttpClient } from "@/http"
 import type {
   CompanyInfo,
+  CompanyTicker,
   DiscoverFilingsInput,
   DownloadedExhibit,
   EdgarClientOptions,
@@ -55,6 +56,10 @@ export class EdgarClient {
 
   async getCompanyInfo(cik: string): Promise<CompanyInfo> {
     return this.companyService.getCompanyInfo(cik)
+  }
+
+  async lookupCompany(query: string): Promise<CompanyTicker[]> {
+    return this.companyService.lookupCompany(query)
   }
 
   async discoverFilings(input: DiscoverFilingsInput): Promise<FilingRef[]> {

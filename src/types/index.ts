@@ -123,6 +123,17 @@ export type CompanyInfo = {
   fiscalYearEnd?: string
 }
 
+export type CompanyTicker = {
+  /** Central Index Key (10-digit zero-padded) */
+  cik: string
+  /** Trading symbol */
+  ticker: string
+  /** Company name */
+  name: string
+  /** Stock exchange */
+  exchange: string
+}
+
 export type DownloadedExhibit = {
   /** The exhibit reference */
   exhibit: ExhibitRef
