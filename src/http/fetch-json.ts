@@ -11,9 +11,7 @@ export async function fetchJson<T>(
   httpClient: SecHttpClient,
   context: { readonly operation: string; readonly endpointClass: string },
 ): Promise<T> {
-  const response = (await httpClient.request(url, { context })) as unknown as {
-    json(): Promise<unknown>
-  }
+  const response = await httpClient.request(url, { context })
 
   try {
     return (await response.json()) as T

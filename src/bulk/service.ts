@@ -28,12 +28,9 @@ export class BulkDataService {
     source: BulkDownloadResult["source"],
     operation: string,
   ): Promise<BulkDownloadResult> {
-    const response = (await this.httpClient.request(url, {
+    const response = await this.httpClient.request(url, {
       context: { operation, endpointClass: "bulk-data" },
-    })) as unknown as {
-      arrayBuffer(): Promise<ArrayBuffer>
-      headers: { get(name: string): string | null }
-    }
+    })
 
     const buffer = await response.arrayBuffer()
     const bytes = new Uint8Array(buffer)

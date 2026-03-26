@@ -54,9 +54,7 @@ export async function fetchAllFilings(
   for (const file of paginatedFiles) {
     const fileUrl = `https://data.sec.gov/submissions/${file.name}`
 
-    const paginatedResponse = (await httpClient.request(fileUrl, { context })) as unknown as {
-      json(): Promise<unknown>
-    }
+    const paginatedResponse = await httpClient.request(fileUrl, { context })
 
     let paginatedData: Record<string, unknown>
     try {

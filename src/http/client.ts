@@ -2,7 +2,7 @@
 
 import type { EdgarError } from "@/errors"
 import { ConfigurationError, TimeoutError, TransportError } from "@/errors"
-import type { EdgarClientOptions } from "@/types"
+import type { EdgarClientOptions, FetchFn, FetchResponse } from "@/types"
 import { classifyResponseError } from "./error-mapper"
 import { TokenBucket } from "./limiter"
 import { calculateBackoffMs } from "./retry"
@@ -14,7 +14,7 @@ declare const setTimeout: (callback: () => void, ms: number) => unknown
 declare const fetch: (
   url: string,
   init?: { signal?: AbortSignal; headers?: Headers },
-) => Promise<HttpResponse>
+) => Promise<FetchResponse>
 declare class Headers {
   constructor(init?: Record<string, string>)
   has(name: string): boolean
@@ -26,12 +26,6 @@ declare class AbortSignal {
   readonly aborted: boolean
   readonly reason: unknown
   addEventListener(event: string, listener: () => void): void
-}
-
-// Internal types for fetch API (compatible with Node 18+ and Bun)
-type HttpResponse = {
-  readonly ok: boolean
-  readonly status: number
 }
 
 type RequestContext = {
@@ -82,6 +76,7 @@ export class SecHttpClient {
   private readonly timeoutMs: number
   private readonly retries: Required<NonNullable<EdgarClientOptions["retries"]>>
   private readonly telemetry?: EdgarClientOptions["telemetry"]
+  private readonly fetchFn: FetchFn
 
   constructor(options: EdgarClientOptions) {
     // Validate user-agent (SEC compliance requirement)
@@ -114,6 +109,9 @@ export class SecHttpClient {
 
     // Store optional telemetry hooks
     this.telemetry = options.telemetry
+
+    // Store custom fetch or fall back to global
+    this.fetchFn = options.fetch ?? (fetch as FetchFn)
   }
 
   /**
@@ -124,7 +122,7 @@ export class SecHttpClient {
    * @returns Promise resolving to Response (caller handles response.ok check and body parsing)
    * @throws EdgarError on retryable errors after exhausting retries, or non-retryable errors immediately
    */
-  async request(url: string, init?: HttpRequestInit): Promise<HttpResponse> {
+  async request(url: string, init?: HttpRequestInit): Promise<FetchResponse> {
     // Ensure User-Agent header is set (SEC compliance)
     const headers = new Headers(
       init?.headers instanceof Headers ? {} : (init?.headers as Record<string, string>),
@@ -177,9 +175,9 @@ export class SecHttpClient {
           ? combineSignals([userSignal, timeoutSignal])
           : timeoutSignal
 
-        let response: HttpResponse
+        let response: FetchResponse
         try {
-          response = await fetch(url, { signal: composedSignal, headers })
+          response = await this.fetchFn(url, { signal: composedSignal, headers })
         } catch (error) {
           // Differentiate timeout from user abort
           if (timeoutSignal.aborted && !userSignal?.aborted) {
