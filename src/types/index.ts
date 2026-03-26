@@ -1,5 +1,14 @@
 // Public types — edgar-ts API contract
 
+/**
+ * Fetch-compatible function type. Avoids DOM type dependency (lib: ES2022 only).
+ * Any function assignable from `globalThis.fetch` satisfies this signature.
+ */
+export type FetchFn = (
+  url: string,
+  init?: Record<string, unknown>,
+) => Promise<{ readonly ok: boolean; readonly status: number }>
+
 export type EdgarClientOptions = {
   /** Descriptive user-agent string (required by SEC). e.g. "AcmeLegalBot/1.0 (ops@acme.test)" */
   userAgent: string
@@ -11,6 +20,8 @@ export type EdgarClientOptions = {
   retries?: RetryOptions
   /** Optional telemetry hooks */
   telemetry?: TelemetryOptions
+  /** Custom fetch function. Defaults to globalThis.fetch. Use for proxy routing or testing. */
+  fetch?: FetchFn
 }
 
 export type RetryOptions = {

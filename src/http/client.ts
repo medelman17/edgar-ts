@@ -2,7 +2,7 @@
 
 import type { EdgarError } from "@/errors"
 import { ConfigurationError, TimeoutError, TransportError } from "@/errors"
-import type { EdgarClientOptions } from "@/types"
+import type { EdgarClientOptions, FetchFn } from "@/types"
 import { classifyResponseError } from "./error-mapper"
 import { TokenBucket } from "./limiter"
 import { calculateBackoffMs } from "./retry"
@@ -82,6 +82,7 @@ export class SecHttpClient {
   private readonly timeoutMs: number
   private readonly retries: Required<NonNullable<EdgarClientOptions["retries"]>>
   private readonly telemetry?: EdgarClientOptions["telemetry"]
+  private readonly fetchFn: FetchFn
 
   constructor(options: EdgarClientOptions) {
     // Validate user-agent (SEC compliance requirement)
@@ -114,6 +115,9 @@ export class SecHttpClient {
 
     // Store optional telemetry hooks
     this.telemetry = options.telemetry
+
+    // Store custom fetch or fall back to global
+    this.fetchFn = options.fetch ?? (fetch as FetchFn)
   }
 
   /**
@@ -179,7 +183,7 @@ export class SecHttpClient {
 
         let response: HttpResponse
         try {
-          response = await fetch(url, { signal: composedSignal, headers })
+          response = await this.fetchFn(url, { signal: composedSignal, headers })
         } catch (error) {
           // Differentiate timeout from user abort
           if (timeoutSignal.aborted && !userSignal?.aborted) {
