@@ -1,5 +1,23 @@
 # edgar-ts
 
+## 0.4.0
+
+### Minor Changes
+
+- [#9](https://github.com/medelman17/edgar-ts/pull/9) [`db3bae6`](https://github.com/medelman17/edgar-ts/commit/db3bae69bb14dfefc30cf6db237aa716b112cc7b) Thanks [@medelman17](https://github.com/medelman17)! - Add custom `fetch` function injection to `EdgarClientOptions` and broaden response/init types.
+
+  **New option:** `fetch?: FetchFn` — allows consumers to provide a custom fetch implementation for proxy routing, testing, or custom transport. Falls back to `globalThis.fetch` when not provided.
+
+  **New types:**
+
+  - `FetchResponse` — response type including `json()`, `text()`, `arrayBuffer()`, and `headers` (the methods consumers actually use)
+  - `FetchInit` — request init type with `method`, `headers`, `body`, `signal`, and index signature
+  - `FetchFn` — updated to use `FetchInit` and `FetchResponse` instead of narrow `Record<string, unknown>` / `{ ok, status }`
+
+  **Type cleanup:** Removed 6 `as unknown as` response casts across consumer files (`fetch-json.ts`, `download/service.ts`, `exhibits/service.ts`, `discovery/pagination.ts`, `discovery/index-service.ts`, `bulk/service.ts`). The broadened `FetchResponse` type makes these casts unnecessary.
+
+  All existing behavior (rate limiting, retry, timeout, telemetry) wraps whatever fetch function is supplied. Non-breaking — existing consumers see no difference.
+
 ## 0.3.0
 
 ### Minor Changes
