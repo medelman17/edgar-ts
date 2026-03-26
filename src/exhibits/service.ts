@@ -90,11 +90,9 @@ export class ExhibitService {
     const indexUrl = this.buildFilingIndexUrl(filing.cik, filing.accessionNo)
 
     // 2. Fetch index HTML
-    const response = (await this.httpClient.request(indexUrl, {
+    const response = await this.httpClient.request(indexUrl, {
       context: { operation: "listExhibits", endpointClass: "archive" },
-    })) as unknown as {
-      text(): Promise<string>
-    }
+    })
     const htmlContent = await response.text()
 
     // 3. Parse exhibits from HTML table

@@ -1,13 +1,31 @@
 // Public types — edgar-ts API contract
 
+/** Response type for FetchFn — includes the methods consumers actually use */
+export type FetchResponse = {
+  readonly ok: boolean
+  readonly status: number
+  json(): Promise<unknown>
+  text(): Promise<string>
+  arrayBuffer(): Promise<ArrayBuffer>
+  readonly headers: { get(name: string): string | null }
+}
+
+/** Request init for FetchFn — covers the options consumers actually pass */
+export type FetchInit = {
+  method?: string
+  headers?:
+    | Record<string, string>
+    | { has(name: string): boolean; set(name: string, value: string): void; get(name: string): string | null }
+  body?: unknown
+  signal?: { readonly aborted: boolean; readonly reason: unknown }
+  [key: string]: unknown
+}
+
 /**
  * Fetch-compatible function type. Avoids DOM type dependency (lib: ES2022 only).
  * Any function assignable from `globalThis.fetch` satisfies this signature.
  */
-export type FetchFn = (
-  url: string,
-  init?: Record<string, unknown>,
-) => Promise<{ readonly ok: boolean; readonly status: number }>
+export type FetchFn = (url: string, init?: FetchInit) => Promise<FetchResponse>
 
 export type EdgarClientOptions = {
   /** Descriptive user-agent string (required by SEC). e.g. "AcmeLegalBot/1.0 (ops@acme.test)" */

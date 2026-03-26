@@ -26,9 +26,9 @@ export class IndexService {
     for (const { year, quarter } of quarters) {
       const url = `https://www.sec.gov/Archives/edgar/full-index/${year}/QTR${quarter}/master.idx`
 
-      const response = (await this.httpClient.request(url, {
+      const response = await this.httpClient.request(url, {
         context: { operation: "discoverByIndex", endpointClass: "full-index" },
-      })) as unknown as { text(): Promise<string> }
+      })
 
       const content = await response.text()
       const entries = parseIndexFile(content)
