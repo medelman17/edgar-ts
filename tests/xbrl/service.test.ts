@@ -1,7 +1,6 @@
 // XBRL API wrapping tests
 
 import { describe, expect, it, vi } from "vitest"
-import { ValidationError } from "@/errors"
 import type { SecHttpClient } from "@/http"
 import { XbrlService } from "@/xbrl/service"
 
