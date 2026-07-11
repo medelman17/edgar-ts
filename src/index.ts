@@ -7,4 +7,5 @@
 
 export { EdgarClient } from "./client"
 export * from "./errors"
+export type { SearchHit, SearchQuery, SearchResult } from "./search"
 export * from "./types"

@@ -24,11 +24,14 @@ const SAMPLE_SEARCH_RESPONSE = {
         _source: {
           file_date: "2024-06-15",
           display_names: ["Apple Inc.  (AAPL)  (CIK 0000320193)"],
+          ciks: ["0000320193"],
           file_num: ["001-36743"],
           form: "10-K",
           root_forms: ["10-K"],
+          file_type: "10-K",
           file_description: "Annual report",
           period_ending: "2024-09-30",
+          adsh: "0001193125-24-100001",
         },
         _score: 12.5,
       },
@@ -36,10 +39,15 @@ const SAMPLE_SEARCH_RESPONSE = {
         _id: "0001193125-24-200001:exhibit10-1.htm",
         _source: {
           file_date: "2024-03-15",
-          display_names: ["MICROSOFT CORP  (MSFT)  (CIK 0000789019)"],
+          display_names: [
+            "MICROSOFT CORP  (MSFT)  (CIK 0000789019)",
+            "Activision Blizzard, Inc.  (CIK 0000718877)",
+          ],
+          ciks: ["0000789019", "0000718877"],
           file_num: ["001-14278"],
           form: "8-K",
           root_forms: ["8-K"],
+          file_type: "EX-10.1",
           file_description: "Current report",
         },
         _score: 8.3,
@@ -57,9 +65,65 @@ describe("SearchService", () => {
       const result = await service.searchFilings({ q: "non-compete agreement" })
 
       expect(result.total).toBe(2)
+      expect(result.totalRelation).toBe("eq")
       expect(result.hits).toHaveLength(2)
       expect(result.hits[0]?.entityName).toBe("Apple Inc.  (AAPL)  (CIK 0000320193)")
       expect(result.hits[0]?.formType).toBe("10-K")
+    })
+
+    it("should pass through the matched sub-document identity and filer arrays", async () => {
+      const httpClient = createMockHttpClient(SAMPLE_SEARCH_RESPONSE)
+      const service = new SearchService(httpClient)
+
+      const result = await service.searchFilings({ q: "non-compete agreement" })
+
+      const exhibitHit = result.hits[1]
+      expect(exhibitHit?.accessionNo).toBe("0001193125-24-200001")
+      expect(exhibitHit?.filename).toBe("exhibit10-1.htm")
+      expect(exhibitHit?.fileType).toBe("EX-10.1")
+      expect(exhibitHit?.ciks).toEqual(["0000789019", "0000718877"])
+      expect(exhibitHit?.displayNames).toEqual([
+        "MICROSOFT CORP  (MSFT)  (CIK 0000789019)",
+        "Activision Blizzard, Inc.  (CIK 0000718877)",
+      ])
+    })
+
+    it("should fall back to the _id prefix for accessionNo when adsh is absent", async () => {
+      const response = {
+        hits: {
+          total: { value: 1, relation: "eq" },
+          hits: [
+            {
+              _id: "0001193125-24-300001:doc.htm",
+              _source: { form: "S-4", file_date: "2024-05-01" },
+              _score: 1.0,
+            },
+          ],
+        },
+      }
+      const httpClient = createMockHttpClient(response)
+      const service = new SearchService(httpClient)
+
+      const result = await service.searchFilings({ q: "test" })
+
+      expect(result.hits[0]?.accessionNo).toBe("0001193125-24-300001")
+      expect(result.hits[0]?.filename).toBe("doc.htm")
+      expect(result.hits[0]?.ciks).toEqual([])
+      expect(result.hits[0]?.displayNames).toEqual([])
+      expect(result.hits[0]?.fileType).toBeUndefined()
+    })
+
+    it("should surface the saturated-total relation as gte", async () => {
+      const response = {
+        hits: { total: { value: 10000, relation: "gte" }, hits: [] },
+      }
+      const httpClient = createMockHttpClient(response)
+      const service = new SearchService(httpClient)
+
+      const result = await service.searchFilings({ q: "common phrase" })
+
+      expect(result.total).toBe(10000)
+      expect(result.totalRelation).toBe("gte")
     })
 
     it("should construct correct EFTS URL with query params", async () => {

@@ -204,9 +204,14 @@ const results = await client.searchFilings({
   to: "2024-12-31",
 })
 
-console.log(`${results.total} filings found`)
+// EFTS saturates totals at 10,000 — "gte" means slice the query (by date/form) to enumerate fully
+console.log(`${results.total}${results.totalRelation === "gte" ? "+" : ""} filings found`)
+
 for (const hit of results.hits) {
+  // Each hit identifies the exact sub-document that matched, not just the filing
   console.log(`${hit.entityName} — ${hit.formType} (${hit.fileDate})`)
+  console.log(`  matched ${hit.fileType ?? "?"} ${hit.filename} in ${hit.accessionNo}`)
+  console.log(`  filers: ${hit.ciks.join(", ")}`) // co-filers included (e.g. bidder + target)
 }
 ```
 
@@ -233,6 +238,9 @@ import type {
   DownloadedExhibit,
   CompanyInfo,
   CompanyTicker,
+  SearchQuery,
+  SearchResult,
+  SearchHit,
 } from "edgar-ts"
 ```
 
