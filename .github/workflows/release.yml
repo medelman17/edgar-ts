@@ -21,16 +21,17 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          registry-url: https://registry.npmjs.org
           cache: pnpm
+      # OIDC trusted publishing needs npm >= 11.5.1; Node 22 bundles npm 10.
+      # Auth comes from the npm Trusted Publisher config (via id-token: write) — no token,
+      # and no registry-url, so setup-node writes no NODE_AUTH_TOKEN line into .npmrc.
+      - run: npm install -g npm@latest
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
       - uses: changesets/action@v1
         with:
-          publish: pnpm changeset publish --provenance
+          publish: pnpm changeset publish
           title: "chore: version packages"
           commit: "chore: version packages"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_CONFIG_PROVENANCE: true
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
