@@ -376,7 +376,12 @@ describe("EdgarClient", () => {
       mockFetch.mockResolvedValue({
         ok: true,
         status: 200,
-        json: async () => ({ cik: 320193, taxonomy: "us-gaap", tag: "Revenue", units: { USD: [] } }),
+        json: async () => ({
+          cik: 320193,
+          taxonomy: "us-gaap",
+          tag: "Revenue",
+          units: { USD: [] },
+        }),
       })
 
       const client = new EdgarClient({ userAgent: "TestBot/1.0 (test@example.com)" })

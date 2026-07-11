@@ -15,7 +15,11 @@ export type FetchInit = {
   method?: string
   headers?:
     | Record<string, string>
-    | { has(name: string): boolean; set(name: string, value: string): void; get(name: string): string | null }
+    | {
+        has(name: string): boolean
+        set(name: string, value: string): void
+        get(name: string): string | null
+      }
   body?: unknown
   signal?: { readonly aborted: boolean; readonly reason: unknown }
   [key: string]: unknown

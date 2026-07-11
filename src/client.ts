@@ -32,7 +32,11 @@ const DEFAULT_RETRY: RetryOptions = {
 export class EdgarClient {
   private readonly options: Required<
     Pick<EdgarClientOptions, "userAgent" | "maxRequestsPerSecond" | "timeoutMs">
-  > & { retries: RetryOptions; telemetry: EdgarClientOptions["telemetry"]; fetch?: EdgarClientOptions["fetch"] }
+  > & {
+    retries: RetryOptions
+    telemetry: EdgarClientOptions["telemetry"]
+    fetch?: EdgarClientOptions["fetch"]
+  }
   private readonly httpClient: SecHttpClient
   private readonly bulkDataService: BulkDataService
   private readonly searchService: SearchService
