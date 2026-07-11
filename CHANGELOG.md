@@ -1,5 +1,19 @@
 # edgar-ts
 
+## 0.5.0
+
+### Minor Changes
+
+- [#11](https://github.com/medelman17/edgar-ts/pull/11) [`46e1887`](https://github.com/medelman17/edgar-ts/commit/46e1887e8a689955b18851f17367725ab730e4a4) Thanks [@medelman17](https://github.com/medelman17)! - Pass through EFTS sub-document identity and filer metadata on search results.
+
+  `SearchHit` now includes `accessionNo`, `filename` (parsed from the hit id, with `adsh`
+  preferred when present), `fileType` (the matched sub-document's type, e.g. `EX-5.1` — EFTS
+  indexes exhibits individually), and the full `ciks` / `displayNames` arrays so multi-filer
+  accessions (e.g. tender offers listing both bidder and target) no longer lose co-filers.
+  `SearchResult` gains `totalRelation` (`"eq" | "gte"`) so a saturated 10,000 total is
+  distinguishable from an exact count. `SearchQuery`, `SearchResult`, and `SearchHit` are now
+  exported from the package barrel.
+
 ## 0.4.0
 
 ### Minor Changes
